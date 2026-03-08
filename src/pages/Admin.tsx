@@ -64,9 +64,10 @@ export default function Admin() {
   const [tlOrgEn, setTlOrgEn] = useState("");
   const [tlDescEn, setTlDescEn] = useState("");
 
+  if (checkingAuth) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
 
-  const handleLogout = () => { sessionStorage.removeItem("admin_auth"); setAuthed(false); };
+  const handleLogout = async () => { await supabase.auth.signOut(); setAuthed(false); };
 
   const inputCls = "w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors";
   const inputEnCls = "w-full bg-secondary/70 text-foreground rounded-lg px-4 py-2.5 text-sm border border-blue-500/30 focus:border-blue-500 focus:outline-none transition-colors";
