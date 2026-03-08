@@ -15,12 +15,7 @@ export default function SkillsSection() {
   const [expanded, setExpanded] = useState(false);
 
   const skillStats = useMemo(() => {
-    // Get persisted hours (with manual overrides)
     const hoursMap = getSkillHours();
-    // Also compute from projects to discover new skills
-    const computed = computeSkillHoursFromProjects(projects);
-    // Merge: persisted takes priority, but add any new skills from computed
-    const merged: Record<string, number> = { ...computed, ...hoursMap };
 
     // Count projects per skill
     const countMap = new Map<string, number>();
@@ -30,9 +25,13 @@ export default function SkillsSection() {
       });
     });
 
-    return Object.entries(merged)
-      .map(([name, hours]) => ({ name, hours, count: countMap.get(name) || 0 }))
-      .filter((s) => s.count > 0) // Only show skills that appear in projects
+    // Build list from all skills that appear in projects
+    const allSkills = new Set<string>();
+    projects.forEach((p) => p.skills.forEach((s) => allSkills.add(s)));
+
+    return Array.from(allSkills)
+      .map((name) => ({ name, hours: hoursMap[name] || 0, count: countMap.get(name) || 0 }))
+      .filter((s) => s.count > 0)
       .sort((a, b) => b.hours - a.hours || b.count - a.count);
   }, [projects, lang]);
 
