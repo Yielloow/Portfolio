@@ -77,9 +77,9 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          className="mt-12"
         >
-          <ArrowDown className="w-5 h-5 text-muted-foreground animate-bounce" />
+          <ArrowDown className="w-5 h-5 text-muted-foreground animate-bounce mx-auto" />
         </motion.div>
       </div>
     </section>
