@@ -36,6 +36,13 @@ export default function Navbar() {
             <Globe className="w-3.5 h-3.5" />
             {lang === "fr" ? "EN" : "FR"}
           </button>
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-foreground transition-colors font-medium"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </button>
           <Link to="/admin" className="text-sm px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium">
             {t("nav.admin")}
           </Link>
