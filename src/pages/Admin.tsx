@@ -76,6 +76,19 @@ export default function Admin() {
     reader.readAsDataURL(file);
   };
 
+  const handleCvUpload = (lang: "fr" | "en") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") { toast.error("Veuillez sélectionner un fichier PDF"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const key = lang === "fr" ? "cv_fr" : "cv_en";
+      setProfile((p) => ({ ...p, [key]: reader.result as string }));
+      toast.success(`CV ${lang.toUpperCase()} uploadé !`);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const translateProfile = async () => {
     setTranslating(true);
     try {
