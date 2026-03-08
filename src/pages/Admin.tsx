@@ -16,13 +16,12 @@ export default function Admin() {
   const [authed, setAuthed] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Check existing session on mount
-  useState(() => {
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setAuthed(true);
       setCheckingAuth(false);
     });
-  });
+  }, []);
   const [projects, setProjects] = useState<Project[]>(getProjects());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
