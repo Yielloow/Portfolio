@@ -6,7 +6,11 @@ export interface Project {
   skills: string[];
   link?: string;
   hours?: number;
-  images?: string[]; // base64 data URLs
+  images?: string[];
+  // English translations
+  title_en?: string;
+  description_en?: string;
+  domain_en?: string;
 }
 
 const STORAGE_KEY = "portfolio_projects";

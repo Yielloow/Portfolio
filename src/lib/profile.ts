@@ -1,13 +1,17 @@
 export interface Profile {
   firstName: string;
   lastName: string;
-  photo: string; // base64 data URL or empty
+  photo: string;
   description: string;
   tagline: string;
   email: string;
   location: string;
   github: string;
   linkedin: string;
+  // English translations
+  description_en: string;
+  tagline_en: string;
+  location_en: string;
 }
 
 const STORAGE_KEY = "portfolio_profile";
@@ -22,6 +26,9 @@ const defaultProfile: Profile = {
   location: "Belgique",
   github: "https://github.com",
   linkedin: "https://linkedin.com",
+  description_en: "",
+  tagline_en: "",
+  location_en: "",
 };
 
 export function getProfile(): Profile {

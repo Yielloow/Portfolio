@@ -3,9 +3,13 @@ export interface TimelineItem {
   title: string;
   organization: string;
   description: string;
-  startDate: string; // "2022-09" format
-  endDate: string;   // "2025-06" or "present"
+  startDate: string;
+  endDate: string;
   type: "education" | "work" | "project" | "other";
+  // English translations
+  title_en?: string;
+  organization_en?: string;
+  description_en?: string;
 }
 
 const STORAGE_KEY = "portfolio_timeline";
