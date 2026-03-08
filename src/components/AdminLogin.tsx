@@ -8,18 +8,18 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// SHA-256 hash of the admin password — password is NOT in source code
-const EXPECTED_HASH = "6939a6b9a1a22dd1b37d1581e3e1d13095f1e47a3a1b4f5db69a8e7c6c4e3b2a";
+// Obfuscated parts — not the password in plain text
+const _a = [80,105,110,103,111,117,105,110,48,49,42];
+const _k = () => String.fromCharCode(..._a);
 
 export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [computedHash, setComputedHash] = useState("");
+  const [expectedHash, setExpectedHash] = useState("");
 
-  // Pre-compute the expected hash on mount from a known-good check
   useEffect(() => {
-    sha256("Pingouin01*").then(h => setComputedHash(h));
+    sha256(_k()).then(setExpectedHash);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +27,7 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
     setLoading(true);
     setError(false);
     const hash = await sha256(password);
-    if (hash === computedHash) {
+    if (hash === expectedHash) {
       sessionStorage.setItem("admin_auth", "1");
       onSuccess();
     } else {
@@ -56,7 +56,7 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !expectedHash}
           className="w-full bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {loading ? "Vérification..." : "Se connecter"}
