@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "profile" | "projects" | "timeline" | "testimonials";
+type Tab = "profile" | "projects" | "timeline" | "testimonials" | "partners";
 
 export default function Admin() {
   const [authed, setAuthed] = useState(false);
