@@ -81,7 +81,7 @@ const translations = {
 
   // Partners
   "partners.label": { fr: "Partenaires", en: "Partners" },
-  "partners.title_start": { fr: "Nos ", en: "Our " },
+  "partners.title_start": { fr: "Mes ", en: "My " },
   "partners.title_highlight": { fr: "partenaires", en: "partners" },
 
   // Footer

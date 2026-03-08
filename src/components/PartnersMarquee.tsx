@@ -8,8 +8,9 @@ export default function PartnersMarquee() {
 
   if (partners.length === 0) return null;
 
-  // Duplicate for seamless loop
-  const items = [...partners, ...partners];
+  // Repeat enough times to fill the viewport for seamless looping
+  const repeatCount = Math.max(4, Math.ceil(20 / partners.length));
+  const items = Array.from({ length: repeatCount }, () => partners).flat();
 
   return (
     <section className="py-16 3xl:py-20 4k:py-24 overflow-hidden">
@@ -30,12 +31,12 @@ export default function PartnersMarquee() {
 
         <motion.div
           className="flex gap-12 3xl:gap-16 items-center w-max"
-          animate={{ x: ["0%", "-50%"] }}
+          animate={{ x: ["0%", `-${100 / repeatCount * (repeatCount / 2)}%`] }}
           transition={{
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: partners.length * 4,
+              duration: partners.length * 5,
               ease: "linear",
             },
           }}
