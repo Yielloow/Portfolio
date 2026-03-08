@@ -20,22 +20,22 @@ export default function HeroSection() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-10"
         style={{ background: "radial-gradient(circle, hsl(38 90% 55%), transparent 70%)" }} />
 
-      <div className="relative z-10 text-center px-6 max-w-4xl">
+      <div className="relative z-10 text-center px-6 max-w-4xl 3xl:max-w-5xl 4k:max-w-6xl">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
           {profile.photo ? (
-            <div className="w-44 h-44 md:w-52 md:h-52 rounded-full mx-auto mb-4 border-2 border-primary/30 overflow-hidden">
+            <div className="w-44 h-44 md:w-52 md:h-52 3xl:w-60 3xl:h-60 4k:w-72 4k:h-72 rounded-full mx-auto mb-4 3xl:mb-6 border-2 border-primary/30 overflow-hidden">
               <img src={profile.photo} alt={`${profile.firstName} ${profile.lastName}`} className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-44 h-44 md:w-52 md:h-52 rounded-full mx-auto mb-4 border-2 border-primary/30 bg-secondary flex items-center justify-center">
-              <User className="w-16 h-16 text-muted-foreground" />
+            <div className="w-44 h-44 md:w-52 md:h-52 3xl:w-60 3xl:h-60 4k:w-72 4k:h-72 rounded-full mx-auto mb-4 3xl:mb-6 border-2 border-primary/30 bg-secondary flex items-center justify-center">
+              <User className="w-16 h-16 3xl:w-20 3xl:h-20 text-muted-foreground" />
             </div>
           )}
-          <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight mb-3 relative z-10">
+          <h1 className="font-heading text-5xl md:text-7xl 3xl:text-8xl 4k:text-9xl font-bold leading-tight mb-3 relative z-10">
             {profile.firstName} <span className="text-gradient">{profile.lastName}</span>
           </h1>
-          <p className="text-primary font-heading text-sm tracking-[0.3em] uppercase mb-4 relative z-10">{tagline}</p>
-          <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-10 font-body leading-relaxed">{desc}</p>
+          <p className="text-primary font-heading text-sm 3xl:text-base 4k:text-lg tracking-[0.3em] uppercase mb-4 relative z-10">{tagline}</p>
+          <p className="text-muted-foreground text-lg md:text-xl 3xl:text-2xl 4k:text-3xl max-w-xl 3xl:max-w-2xl mx-auto mb-10 3xl:mb-14 font-body leading-relaxed">{desc}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="flex items-center justify-center gap-5 flex-wrap">
