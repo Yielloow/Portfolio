@@ -7,6 +7,7 @@ import { getProfile, saveProfile, type Profile } from "@/lib/profile";
 import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
 import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonial } from "@/lib/testimonials";
 import { translateTexts } from "@/lib/translate";
+import { getSkillHours, saveSkillHours, computeSkillHoursFromProjects } from "@/lib/skillHours";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 import { supabase } from "@/integrations/supabase/client";
