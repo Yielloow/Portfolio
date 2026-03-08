@@ -7,6 +7,7 @@ async function sha256(message: string): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
 const _a = [80,105,110,103,111,117,105,110,48,49,42];
 const _k = () => String.fromCharCode(..._a);
 
