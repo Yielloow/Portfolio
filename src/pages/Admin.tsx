@@ -41,6 +41,9 @@ export default function Admin() {
 
   // Timeline
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>(getTimeline());
+
+  // Testimonials
+  const [testimonialItems, setTestimonialItems] = useState<Testimonial[]>(getTestimonials());
   const [showTimelineForm, setShowTimelineForm] = useState(false);
   const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
   const [tlTitle, setTlTitle] = useState("");
