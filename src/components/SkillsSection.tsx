@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { getProjects } from "@/lib/projects";
+import { getSkillHours } from "@/lib/skillHours";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
-const INITIAL_COUNT = 4;
+const INITIAL_COUNT = 2;
 
 export default function SkillsSection() {
   const { lang, t } = useI18n();
@@ -14,21 +15,27 @@ export default function SkillsSection() {
   const [expanded, setExpanded] = useState(false);
 
   const skillStats = useMemo(() => {
-    const map = new Map<string, { count: number; hours: number }>();
+    const hoursMap = getSkillHours();
+
+    // Count projects per skill
+    const countMap = new Map<string, number>();
     projects.forEach((p) => {
       p.skills.forEach((skill) => {
-        const existing = map.get(skill) || { count: 0, hours: 0 };
-        existing.count += 1;
-        existing.hours += p.hours || 0;
-        map.set(skill, existing);
+        countMap.set(skill, (countMap.get(skill) || 0) + 1);
       });
     });
-    return Array.from(map.entries())
-      .map(([name, stats]) => ({ name, ...stats }))
-      .sort((a, b) => b.count - a.count || b.hours - a.hours);
+
+    // Build list from all skills that appear in projects
+    const allSkills = new Set<string>();
+    projects.forEach((p) => p.skills.forEach((s) => allSkills.add(s)));
+
+    return Array.from(allSkills)
+      .map((name) => ({ name, hours: hoursMap[name] || 0, count: countMap.get(name) || 0 }))
+      .filter((s) => s.count > 0)
+      .sort((a, b) => b.hours - a.hours || b.count - a.count);
   }, [projects, lang]);
 
-  const maxCount = skillStats[0]?.count || 1;
+  const maxHours = skillStats[0]?.hours || 1;
   const visible = expanded ? skillStats : skillStats.slice(0, INITIAL_COUNT);
   const hasMore = skillStats.length > INITIAL_COUNT;
 
@@ -83,7 +90,7 @@ export default function SkillsSection() {
                   </div>
                 </div>
                 <Progress
-                  value={(skill.count / maxCount) * 100}
+                  value={maxHours > 0 ? (skill.hours / maxHours) * 100 : 0}
                   className="h-2"
                 />
               </motion.div>

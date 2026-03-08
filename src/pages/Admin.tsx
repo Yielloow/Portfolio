@@ -7,6 +7,7 @@ import { getProfile, saveProfile, type Profile } from "@/lib/profile";
 import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
 import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonial } from "@/lib/testimonials";
 import { translateTexts } from "@/lib/translate";
+import { getSkillHours, saveSkillHours, computeSkillHoursFromProjects } from "@/lib/skillHours";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +65,14 @@ export default function Admin() {
   const [partnerLogo, setPartnerLogo] = useState("");
   const [partnerUrl, setPartnerUrl] = useState("");
   const partnerLogoRef = useRef<HTMLInputElement>(null);
+
+  // Skill hours
+  const [skillHoursMap, setSkillHoursMap] = useState<Record<string, number>>(() => {
+    const projects = getProjects();
+    const computed = computeSkillHoursFromProjects(projects);
+    const stored = getSkillHours();
+    return { ...computed, ...stored };
+  });
 
   const [showTimelineForm, setShowTimelineForm] = useState(false);
   const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
@@ -179,8 +188,24 @@ export default function Admin() {
       images: images.length > 0 ? images : undefined,
       title_en: titleEn.trim() || undefined, description_en: descriptionEn.trim() || undefined, domain_en: domainEn.trim() || undefined,
     };
-    if (editingId) { setProjects(updateProject(editingId, data)); toast.success("Projet mis à jour !"); }
-    else { setProjects(addProject(data)); toast.success("Projet ajouté !"); }
+    let updatedProjects: Project[];
+    if (editingId) { updatedProjects = updateProject(editingId, data); toast.success("Projet mis à jour !"); }
+    else { updatedProjects = addProject(data); toast.success("Projet ajouté !"); }
+    setProjects(updatedProjects);
+    // Sync skill hours: increment new skills from this project
+    const projectHours = hours ? Number(hours) : 0;
+    const newSkillHours = { ...skillHoursMap };
+    skills.forEach((s) => {
+      if (!(s in newSkillHours)) {
+        newSkillHours[s] = 0;
+      }
+      // For new projects, add hours; for edits, the user manages manually
+      if (!editingId) {
+        newSkillHours[s] += projectHours;
+      }
+    });
+    setSkillHoursMap(newSkillHours);
+    saveSkillHours(newSkillHours);
     resetForm();
   };
 
@@ -362,6 +387,31 @@ export default function Admin() {
                   {profile[key] ? `✓ ${label}` : `✗ ${label}`}
                 </button>
               ))}
+            </div>
+
+            <h3 className="font-heading font-semibold text-base pt-2">Heures par compétence</h3>
+            <p className="text-xs text-muted-foreground mb-2">Modifiez librement les heures. Les nouvelles compétences ajoutées via les projets seront automatiquement incrémentées.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries(skillHoursMap)
+                .sort(([, a], [, b]) => b - a)
+                .map(([skill, hrs]) => (
+                  <div key={skill} className="flex items-center gap-2">
+                    <label className="text-sm text-muted-foreground min-w-[100px] truncate" title={skill}>{skill}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={hrs}
+                      onChange={(e) => {
+                        const val = Math.max(0, Number(e.target.value) || 0);
+                        const updated = { ...skillHoursMap, [skill]: val };
+                        setSkillHoursMap(updated);
+                        saveSkillHours(updated);
+                      }}
+                      className="w-20 bg-secondary text-foreground rounded-lg px-3 py-1.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors text-right"
+                    />
+                    <span className="text-xs text-muted-foreground">h</span>
+                  </div>
+                ))}
             </div>
 
             <button onClick={handleProfileSave} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> Enregistrer le profil</button>
