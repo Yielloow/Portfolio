@@ -563,6 +563,20 @@ export default function Admin() {
           </div>
         )}
       </div>
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4" onClick={() => setShowPasswordModal(false)}>
+          <form onSubmit={handlePasswordChange} onClick={(e) => e.stopPropagation()} className="glass-card rounded-xl p-6 w-full max-w-sm space-y-4">
+            <h2 className="font-heading font-bold text-lg text-foreground flex items-center gap-2"><KeyRound className="w-5 h-5 text-primary" /> Changer le mot de passe</h2>
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nouveau mot de passe" className="w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors" autoFocus />
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmer le mot de passe" className="w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors" />
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 bg-secondary text-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-80 transition-opacity">Annuler</button>
+              <button type="submit" disabled={passwordLoading} className="flex-1 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">{passwordLoading ? "..." : "Confirmer"}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
