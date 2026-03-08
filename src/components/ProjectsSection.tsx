@@ -73,14 +73,21 @@ export default function ProjectsSection() {
         {filtered.length === 0 ? (
           <p className="text-muted-foreground text-center py-16">{t("projects.empty")}</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence mode="popLayout">
             {filtered.map((project, i) => {
               const pTitle = lang === "en" && project.title_en ? project.title_en : project.title;
               const pDesc = lang === "en" && project.description_en ? project.description_en : project.description;
               const pDomain = lang === "en" && project.domain_en ? project.domain_en : project.domain;
 
               return (
-                <motion.div key={project.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
+                <motion.div
+                  key={project.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                >
                   <Link to={`/project/${project.id}`} className="glass-card rounded-xl flex flex-col group hover:glow-accent transition-shadow duration-300 overflow-hidden block">
                     {project.images && project.images.length > 0 && (
                       <div className="aspect-video overflow-hidden">
