@@ -7,6 +7,7 @@ import { useTheme } from "@/hooks/use-theme";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { lang, setLang, t } = useI18n();
+  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { label: t("nav.about"), href: "#about" },
