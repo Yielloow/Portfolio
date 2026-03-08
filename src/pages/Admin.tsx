@@ -342,6 +342,28 @@ export default function Admin() {
               </div>
             </div>
 
+            <h3 className="font-heading font-semibold text-base pt-2">Sections visibles</h3>
+            <div className="flex flex-wrap gap-3">
+              {([
+                { key: "skills_enabled" as const, label: "Compétences" },
+                { key: "partners_enabled" as const, label: "Partenaires" },
+                { key: "testimonials_enabled" as const, label: "Témoignages" },
+              ]).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    const updated = { ...profile, [key]: !profile[key] };
+                    setProfile(updated);
+                    saveProfile(updated);
+                    toast.success(`Section "${label}" ${updated[key] ? "activée" : "désactivée"}`);
+                  }}
+                  className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border font-heading font-medium transition-colors ${profile[key] ? "border-green-500/50 text-green-400 bg-green-500/10 hover:bg-green-500/20" : "border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20"}`}
+                >
+                  {profile[key] ? `✓ ${label}` : `✗ ${label}`}
+                </button>
+              ))}
+            </div>
+
             <button onClick={handleProfileSave} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> Enregistrer le profil</button>
           </div>
         )}
