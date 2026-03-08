@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { getPartners } from "@/lib/partners";
 import { useI18n } from "@/lib/i18n";
 
@@ -8,9 +7,8 @@ export default function PartnersMarquee() {
 
   if (partners.length === 0) return null;
 
-  // Repeat enough times to fill the viewport for seamless looping
-  const repeatCount = Math.max(4, Math.ceil(20 / partners.length));
-  const items = Array.from({ length: repeatCount }, () => partners).flat();
+  // Exactly 2 identical halves for a seamless loop at -50%
+  const items = [...partners, ...partners];
 
   return (
     <section className="py-12 3xl:py-14 4k:py-16 overflow-hidden">
@@ -29,23 +27,13 @@ export default function PartnersMarquee() {
         <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-        <motion.div
-          className="flex gap-12 3xl:gap-16 items-center w-max"
-          animate={{ x: ["0%", `-${100 / repeatCount * (repeatCount / 2)}%`] }}
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: partners.length * 60,
-              ease: "linear",
-            },
-          }}
+        <div
+          className="flex gap-12 3xl:gap-16 items-center w-max animate-marquee"
+          style={{ "--marquee-duration": `${Math.max(30, partners.length * 12)}s` } as React.CSSProperties}
         >
           {items.map((partner, i) => {
             const content = (
-              <div
-                className="flex items-center gap-4 glass-card rounded-xl px-6 py-4 3xl:px-8 3xl:py-5 hover:glow-accent transition-shadow duration-300 shrink-0"
-              >
+              <div className="flex items-center gap-4 glass-card rounded-xl px-6 py-4 3xl:px-8 3xl:py-5 hover:glow-accent transition-shadow duration-300 shrink-0">
                 {partner.logo && (
                   <img
                     src={partner.logo}
@@ -75,7 +63,7 @@ export default function PartnersMarquee() {
               </div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
