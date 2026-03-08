@@ -9,6 +9,7 @@ export default function HeroSection() {
 
   const tagline = lang === "en" && profile.tagline_en ? profile.tagline_en : profile.tagline;
   const desc = lang === "en" && profile.description_en ? profile.description_en : profile.description;
+  const cvUrl = lang === "en" && profile.cv_en ? profile.cv_en : profile.cv_fr || null;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

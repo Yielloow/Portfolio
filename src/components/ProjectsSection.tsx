@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,6 +8,24 @@ import { useI18n } from "@/lib/i18n";
 export default function ProjectsSection() {
   const projects = getProjects();
   const { lang, t } = useI18n();
+  const [activeDomain, setActiveDomain] = useState<string | null>(null);
+
+  // Collect unique domains
+  const domains = useMemo(() => {
+    const set = new Set<string>();
+    projects.forEach((p) => {
+      const d = lang === "en" && p.domain_en ? p.domain_en : p.domain;
+      set.add(d);
+    });
+    return Array.from(set);
+  }, [projects, lang]);
+
+  const filtered = activeDomain
+    ? projects.filter((p) => {
+        const d = lang === "en" && p.domain_en ? p.domain_en : p.domain;
+        return d === activeDomain;
+      })
+    : projects;
 
   return (
     <section id="projects" className="py-24 px-6">
@@ -16,11 +35,40 @@ export default function ProjectsSection() {
           <h2 className="font-heading text-3xl md:text-4xl font-bold">{t("projects.title_start")}<span className="text-gradient">{t("projects.title_highlight")}</span></h2>
         </motion.div>
 
-        {projects.length === 0 ? (
+        {/* Domain filters */}
+        {domains.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            <button
+              onClick={() => setActiveDomain(null)}
+              className={`text-sm font-heading font-medium px-4 py-2 rounded-lg border transition-colors ${
+                activeDomain === null
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+              }`}
+            >
+              {t("projects.all")}
+            </button>
+            {domains.map((domain) => (
+              <button
+                key={domain}
+                onClick={() => setActiveDomain(domain)}
+                className={`text-sm font-heading font-medium px-4 py-2 rounded-lg border transition-colors ${
+                  activeDomain === domain
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+                }`}
+              >
+                {domain}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {filtered.length === 0 ? (
           <p className="text-muted-foreground text-center py-16">{t("projects.empty")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, i) => {
+            {filtered.map((project, i) => {
               const pTitle = lang === "en" && project.title_en ? project.title_en : project.title;
               const pDesc = lang === "en" && project.description_en ? project.description_en : project.description;
               const pDomain = lang === "en" && project.domain_en ? project.domain_en : project.domain;

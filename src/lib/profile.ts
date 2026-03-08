@@ -32,6 +32,8 @@ const defaultProfile: Profile = {
   description_en: "",
   tagline_en: "",
   location_en: "",
+  cv_fr: "",
+  cv_en: "",
 };
 
 export function getProfile(): Profile {
