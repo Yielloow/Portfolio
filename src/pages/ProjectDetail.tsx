@@ -61,7 +61,7 @@ export default function ProjectDetail() {
               <h2 className="font-heading font-semibold text-lg mb-4">{t("detail.gallery")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {project.images.map((img, i) => (
-                  <div key={i} className="rounded-lg overflow-hidden border border-border/50 aspect-video"><img src={img} alt={`${pTitle} - ${i + 1}`} className="w-full h-full object-cover" /></div>
+                  <div key={i} className="rounded-lg overflow-hidden border border-border/50 aspect-video"><img src={img} alt={`${pTitle} - ${i + 1}`} className="w-full h-full object-cover" loading="lazy" /></div>
                 ))}
               </div>
             </div>

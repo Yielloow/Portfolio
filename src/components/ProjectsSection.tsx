@@ -92,7 +92,7 @@ export default function ProjectsSection() {
                     <Link to={`/project/${project.id}`} className="glass-card rounded-xl flex flex-col group hover:glow-accent transition-shadow duration-300 overflow-hidden block">
                       {project.images && project.images.length > 0 && (
                         <div className="aspect-video overflow-hidden">
-                          <img src={project.images[0]} alt={pTitle} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={project.images[0]} alt={pTitle} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                         </div>
                       )}
                       <div className="p-6 flex flex-col flex-1">
