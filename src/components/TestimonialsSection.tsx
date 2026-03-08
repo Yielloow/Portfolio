@@ -26,13 +26,13 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section id="testimonials" className="py-24 px-6">
-      <div className="max-w-5xl mx-auto">
+    <section id="testimonials" className="py-24 3xl:py-32 4k:py-40 px-6">
+      <div className="max-w-5xl 3xl:max-w-6xl 4k:max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-xs font-heading tracking-[0.3em] uppercase text-primary">
+          <span className="text-xs 3xl:text-sm font-heading tracking-[0.3em] uppercase text-primary">
             {t("testimonials.label")}
           </span>
-          <h2 className="font-heading font-bold text-3xl md:text-4xl mt-3 text-foreground">
+          <h2 className="font-heading font-bold text-3xl md:text-4xl 3xl:text-5xl 4k:text-6xl mt-3 text-foreground">
             {t("testimonials.title_start")}
             <span className="text-gradient">{t("testimonials.title_highlight")}</span>
           </h2>
@@ -40,7 +40,7 @@ export default function TestimonialsSection() {
 
         {/* Approved testimonials */}
         {testimonials.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-5 3xl:gap-6 mb-16">
             <AnimatePresence>
               {testimonials.map((t, i) => (
                 <motion.div
