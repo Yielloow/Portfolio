@@ -67,6 +67,13 @@ export default function Navbar() {
             <Globe className="w-3.5 h-3.5" />
             {lang === "fr" ? "English" : "Français"}
           </button>
+          <button
+            onClick={() => { toggleTheme(); setOpen(false); }}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {theme === "dark" ? "Light" : "Dark"}
+          </button>
           <Link to="/admin" onClick={() => setOpen(false)} className="block text-sm text-primary font-medium">
             {t("nav.admin")}
           </Link>
