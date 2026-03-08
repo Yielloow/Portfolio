@@ -581,6 +581,78 @@ export default function Admin() {
             ))}
           </div>
         )}
+
+        {/* ═══ PARTNERS TAB ═══ */}
+        {tab === "partners" && (
+          <>
+            {!showPartnerForm && (
+              <button onClick={() => { setPartnerName(""); setPartnerLogo(""); setPartnerUrl(""); setEditingPartnerId(null); setShowPartnerForm(true); }} className="mb-8 flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Ajouter un partenaire</button>
+            )}
+
+            {showPartnerForm && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!partnerName.trim()) { toast.error("Le nom est obligatoire"); return; }
+                  const data: Omit<Partner, "id"> = { name: partnerName.trim(), logo: partnerLogo, url: partnerUrl.trim() || undefined };
+                  if (editingPartnerId) { setPartnerItems(updatePartner(editingPartnerId, data)); toast.success("Partenaire mis à jour !"); }
+                  else { setPartnerItems(addPartner(data)); toast.success("Partenaire ajouté !"); }
+                  setShowPartnerForm(false); setEditingPartnerId(null);
+                }}
+                className="glass-card rounded-xl p-6 mb-8 space-y-4"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-heading font-semibold text-lg">{editingPartnerId ? "Modifier le partenaire" : "Nouveau partenaire"}</h2>
+                  <button type="button" onClick={() => { setShowPartnerForm(false); setEditingPartnerId(null); }} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Nom *</label><input value={partnerName} onChange={(e) => setPartnerName(e.target.value)} className={inputCls} placeholder="Nom du partenaire" /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Lien (optionnel)</label><input value={partnerUrl} onChange={(e) => setPartnerUrl(e.target.value)} className={inputCls} placeholder="https://..." /></div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block flex items-center gap-1"><Image className="w-3.5 h-3.5" /> Logo</label>
+                  <div className="flex items-center gap-4">
+                    {partnerLogo && <img src={partnerLogo} alt="" className="w-16 h-16 rounded-lg object-contain border border-border/50" />}
+                    <button type="button" onClick={() => partnerLogoRef.current?.click()} className="text-sm bg-secondary text-foreground px-4 py-2 rounded-lg border border-border hover:border-primary/50 transition-colors">{partnerLogo ? "Changer" : "Uploader"}</button>
+                    {partnerLogo && <button type="button" onClick={() => setPartnerLogo("")} className="text-xs text-destructive hover:underline">Supprimer</button>}
+                  </div>
+                  <input ref={partnerLogoRef} type="file" accept="image/*" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => setPartnerLogo(reader.result as string);
+                    reader.readAsDataURL(file);
+                    e.target.value = "";
+                  }} className="hidden" />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> {editingPartnerId ? "Mettre à jour" : "Ajouter"}</button>
+                  <button type="button" onClick={() => { setShowPartnerForm(false); setEditingPartnerId(null); }} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">Annuler</button>
+                </div>
+              </form>
+            )}
+
+            <div className="space-y-4">
+              {partnerItems.length === 0 && <p className="text-muted-foreground text-center py-12">Aucun partenaire. Ajoutez-en un !</p>}
+              {partnerItems.map((p) => (
+                <div key={p.id} className="glass-card rounded-xl p-5 flex items-center gap-4">
+                  {p.logo && <img src={p.logo} alt={p.name} className="w-12 h-12 rounded-lg object-contain border border-border/50 shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-heading font-semibold text-foreground">{p.name}</h3>
+                    {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" />{p.url}</a>}
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button onClick={() => { setPartnerName(p.name); setPartnerLogo(p.logo); setPartnerUrl(p.url || ""); setEditingPartnerId(p.id); setShowPartnerForm(true); }} className="p-2 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => { setPartnerItems(removePartner(p.id)); toast.success("Partenaire supprimé"); }} className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
       {/* Password Change Modal */}
       {showPasswordModal && (
