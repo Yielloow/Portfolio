@@ -477,9 +477,22 @@ export default function Admin() {
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading font-semibold text-lg">Témoignages reçus</h2>
-              <span className="text-sm text-muted-foreground">
-                {testimonialItems.filter((t) => !t.approved).length} en attente
-              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  {testimonialItems.filter((t) => !t.approved).length} en attente
+                </span>
+                <button
+                  onClick={() => {
+                    const updated = { ...profile, testimonials_enabled: !profile.testimonials_enabled };
+                    setProfile(updated);
+                    saveProfile(updated);
+                    toast.success(updated.testimonials_enabled ? "Section témoignages activée" : "Section témoignages désactivée");
+                  }}
+                  className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border font-heading font-medium transition-colors ${profile.testimonials_enabled ? "border-green-500/50 text-green-400 bg-green-500/10 hover:bg-green-500/20" : "border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20"}`}
+                >
+                  {profile.testimonials_enabled ? "✓ Section activée" : "✗ Section désactivée"}
+                </button>
+              </div>
             </div>
 
             {testimonialItems.length === 0 && (

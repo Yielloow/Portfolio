@@ -6,9 +6,11 @@ import ProjectsSection from "@/components/ProjectsSection";
 import ContactSection from "@/components/ContactSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import { useI18n } from "@/lib/i18n";
+import { getProfile } from "@/lib/profile";
 
 const Index = () => {
   const { t } = useI18n();
+  const profile = getProfile();
 
   return (
     <div className="min-h-screen bg-background">
@@ -17,7 +19,7 @@ const Index = () => {
       <AboutSection />
       <TimelineSection />
       <ProjectsSection />
-      <TestimonialsSection />
+      {profile.testimonials_enabled && <TestimonialsSection />}
       <ContactSection />
       <footer className="py-8 text-center text-muted-foreground text-sm border-t border-border/50">
         <p>{t("footer.text")}</p>
