@@ -13,7 +13,7 @@ export default function PartnersMarquee() {
   const items = Array.from({ length: repeatCount }, () => partners).flat();
 
   return (
-    <section className="py-16 3xl:py-20 4k:py-24 overflow-hidden">
+    <section className="py-12 3xl:py-14 4k:py-16 overflow-hidden">
       <div className="max-w-5xl 3xl:max-w-6xl 4k:max-w-7xl mx-auto px-6 mb-8">
         <p className="text-primary font-heading text-sm 3xl:text-base tracking-[0.2em] uppercase mb-3">
           {t("partners.label")}
