@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload, MessageSquare, Check } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload, MessageSquare, Check, KeyRound } from "lucide-react";
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
 import { getProfile, saveProfile, type Profile } from "@/lib/profile";
 import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
@@ -27,6 +27,10 @@ export default function Admin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("profile");
   const [translating, setTranslating] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Project form
   const [title, setTitle] = useState("");
@@ -68,6 +72,17 @@ export default function Admin() {
   if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
 
   const handleLogout = async () => { await supabase.auth.signOut(); setAuthed(false); };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) { toast.error("Le mot de passe doit faire au moins 6 caractères"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Les mots de passe ne correspondent pas"); return; }
+    setPasswordLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) { toast.error(error.message); }
+    else { toast.success("Mot de passe mis à jour !"); setShowPasswordModal(false); setNewPassword(""); setConfirmPassword(""); }
+    setPasswordLoading(false);
+  };
 
   const inputCls = "w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors";
   const inputEnCls = "w-full bg-secondary/70 text-foreground rounded-lg px-4 py-2.5 text-sm border border-blue-500/30 focus:border-blue-500 focus:outline-none transition-colors";
@@ -225,7 +240,10 @@ export default function Admin() {
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft className="w-4 h-4" /><span className="text-sm font-medium">Retour</span></Link>
           <h1 className="font-heading font-bold text-lg">Admin<span className="text-primary">.</span></h1>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors text-sm"><LogOut className="w-4 h-4" /> Déconnexion</button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowPasswordModal(true)} className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors text-sm"><KeyRound className="w-4 h-4" /> Mot de passe</button>
+            <button onClick={handleLogout} className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors text-sm"><LogOut className="w-4 h-4" /> Déconnexion</button>
+          </div>
         </div>
       </div>
 
@@ -545,6 +563,20 @@ export default function Admin() {
           </div>
         )}
       </div>
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4" onClick={() => setShowPasswordModal(false)}>
+          <form onSubmit={handlePasswordChange} onClick={(e) => e.stopPropagation()} className="glass-card rounded-xl p-6 w-full max-w-sm space-y-4">
+            <h2 className="font-heading font-bold text-lg text-foreground flex items-center gap-2"><KeyRound className="w-5 h-5 text-primary" /> Changer le mot de passe</h2>
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nouveau mot de passe" className="w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors" autoFocus />
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmer le mot de passe" className="w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors" />
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 bg-secondary text-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-80 transition-opacity">Annuler</button>
+              <button type="submit" disabled={passwordLoading} className="flex-1 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">{passwordLoading ? "..." : "Confirmer"}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
