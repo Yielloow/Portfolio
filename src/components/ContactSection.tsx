@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
-import { Mail, MapPin, Send } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
+import { getProfile } from "@/lib/profile";
 
 export default function ContactSection() {
+  const profile = getProfile();
+
   return (
     <section id="contact" className="py-24 px-6">
       <div className="max-w-3xl mx-auto text-center">
@@ -28,15 +31,15 @@ export default function ContactSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
           <a
-            href="mailto:etudiant@universite.fr"
+            href={`mailto:${profile.email}`}
             className="glass-card rounded-xl px-8 py-5 flex items-center gap-3 hover:glow-accent transition-shadow duration-300"
           >
             <Mail className="w-5 h-5 text-primary" />
-            <span className="text-foreground font-medium">etudiant@universite.fr</span>
+            <span className="text-foreground font-medium">{profile.email}</span>
           </a>
           <div className="glass-card rounded-xl px-8 py-5 flex items-center gap-3">
             <MapPin className="w-5 h-5 text-primary" />
-            <span className="text-foreground font-medium">France</span>
+            <span className="text-foreground font-medium">{profile.location}</span>
           </div>
         </motion.div>
       </div>

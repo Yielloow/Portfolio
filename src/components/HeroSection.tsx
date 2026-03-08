@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
+import { ArrowDown, Github, Linkedin, Mail, User } from "lucide-react";
+import { getProfile } from "@/lib/profile";
 
 export default function HeroSection() {
+  const profile = getProfile();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Subtle grid bg */}
@@ -20,17 +23,27 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
+          {/* Photo */}
+          {profile.photo && (
+            <div className="w-28 h-28 rounded-full mx-auto mb-6 border-2 border-primary/30 overflow-hidden">
+              <img src={profile.photo} alt={`${profile.firstName} ${profile.lastName}`} className="w-full h-full object-cover" />
+            </div>
+          )}
+          {!profile.photo && (
+            <div className="w-28 h-28 rounded-full mx-auto mb-6 border-2 border-primary/30 bg-secondary flex items-center justify-center">
+              <User className="w-12 h-12 text-muted-foreground" />
+            </div>
+          )}
+
           <p className="text-primary font-heading text-sm tracking-[0.3em] uppercase mb-4">
-            Étudiant en dernière année
+            {profile.tagline}
           </p>
           <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight mb-6">
-            Créateur de{" "}
-            <span className="text-gradient">solutions</span>
-            <br />
-            numériques
+            {profile.firstName}{" "}
+            <span className="text-gradient">{profile.lastName}</span>
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-10 font-body leading-relaxed">
-            Passionné par le développement et l'innovation, je transforme des idées en expériences digitales impactantes.
+            {profile.description}
           </p>
         </motion.div>
 
@@ -47,12 +60,16 @@ export default function HeroSection() {
             <a href="#contact" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
               <Mail className="w-5 h-5" />
             </a>
-            <a href="https://github.com" target="_blank" rel="noopener" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
-              <Github className="w-5 h-5" />
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
-              <Linkedin className="w-5 h-5" />
-            </a>
+            {profile.github && (
+              <a href={profile.github} target="_blank" rel="noopener" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                <Github className="w-5 h-5" />
+              </a>
+            )}
+            {profile.linkedin && (
+              <a href={profile.linkedin} target="_blank" rel="noopener" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                <Linkedin className="w-5 h-5" />
+              </a>
+            )}
           </div>
         </motion.div>
 

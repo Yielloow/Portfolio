@@ -5,6 +5,8 @@ export interface Project {
   domain: string;
   skills: string[];
   link?: string;
+  hours?: number;
+  images?: string[]; // base64 data URLs
 }
 
 const STORAGE_KEY = "portfolio_projects";
@@ -17,6 +19,7 @@ const defaultProjects: Project[] = [
     domain: "Développement Web",
     skills: ["React", "TypeScript", "Node.js", "PostgreSQL"],
     link: "https://github.com/example/task-app",
+    hours: 120,
   },
   {
     id: "2",
@@ -24,6 +27,7 @@ const defaultProjects: Project[] = [
     description: "Projet de data science utilisant le machine learning pour prédire les tendances climatiques à partir de données historiques.",
     domain: "Data Science",
     skills: ["Python", "TensorFlow", "Pandas", "Matplotlib"],
+    hours: 80,
   },
   {
     id: "3",
@@ -32,16 +36,19 @@ const defaultProjects: Project[] = [
     domain: "Mobile",
     skills: ["React Native", "Firebase", "Stripe API"],
     link: "https://github.com/example/ecommerce",
+    hours: 200,
   },
 ];
 
 export function getProjects(): Project[] {
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    return JSON.parse(stored);
-  }
+  if (stored) return JSON.parse(stored);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProjects));
   return defaultProjects;
+}
+
+export function getProjectById(id: string): Project | undefined {
+  return getProjects().find((p) => p.id === id);
 }
 
 export function saveProjects(projects: Project[]): void {
