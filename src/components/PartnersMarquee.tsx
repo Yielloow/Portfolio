@@ -36,7 +36,7 @@ export default function PartnersMarquee() {
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: partners.length * 20,
+              duration: partners.length * 60,
               ease: "linear",
             },
           }}
