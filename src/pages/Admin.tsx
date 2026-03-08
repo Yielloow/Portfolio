@@ -5,6 +5,7 @@ import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
 import { getProfile, saveProfile, type Profile } from "@/lib/profile";
 import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
+import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonial } from "@/lib/testimonials";
 import { translateTexts } from "@/lib/translate";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
