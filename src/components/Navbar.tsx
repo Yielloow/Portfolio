@@ -43,9 +43,6 @@ export default function Navbar() {
           >
             {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
-          <Link to="/admin" className="text-sm px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium">
-            {t("nav.admin")}
-          </Link>
         </div>
 
         <button onClick={() => setOpen(!open)} className="md:hidden p-2 text-foreground">
