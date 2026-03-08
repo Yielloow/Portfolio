@@ -73,6 +73,17 @@ export default function Admin() {
 
   const handleLogout = async () => { await supabase.auth.signOut(); setAuthed(false); };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) { toast.error("Le mot de passe doit faire au moins 6 caractères"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Les mots de passe ne correspondent pas"); return; }
+    setPasswordLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) { toast.error(error.message); }
+    else { toast.success("Mot de passe mis à jour !"); setShowPasswordModal(false); setNewPassword(""); setConfirmPassword(""); }
+    setPasswordLoading(false);
+  };
+
   const inputCls = "w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors";
   const inputEnCls = "w-full bg-secondary/70 text-foreground rounded-lg px-4 py-2.5 text-sm border border-blue-500/30 focus:border-blue-500 focus:outline-none transition-colors";
 
