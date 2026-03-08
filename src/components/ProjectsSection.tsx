@@ -28,11 +28,11 @@ export default function ProjectsSection() {
     : projects;
 
   return (
-    <section id="projects" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
+    <section id="projects" className="py-24 3xl:py-32 4k:py-40 px-6">
+      <div className="max-w-6xl 3xl:max-w-7xl 4k:max-w-[1800px] mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="mb-12">
-          <p className="text-primary font-heading text-sm tracking-[0.2em] uppercase mb-3">{t("projects.label")}</p>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold">{t("projects.title_start")}<span className="text-gradient">{t("projects.title_highlight")}</span></h2>
+          <p className="text-primary font-heading text-sm 3xl:text-base tracking-[0.2em] uppercase mb-3">{t("projects.label")}</p>
+          <h2 className="font-heading text-3xl md:text-4xl 3xl:text-5xl 4k:text-6xl font-bold">{t("projects.title_start")}<span className="text-gradient">{t("projects.title_highlight")}</span></h2>
         </motion.div>
 
         {/* Domain filters */}
