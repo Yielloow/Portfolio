@@ -17,7 +17,7 @@ export default function AboutSection() {
   ];
 
   return (
-    <section id="about" className="py-24 3xl:py-32 4k:py-40 px-6">
+    <section id="about" className="py-16 3xl:py-24 4k:py-28 px-6">
       <div className="max-w-5xl 3xl:max-w-6xl 4k:max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
           <p className="text-primary font-heading text-sm 3xl:text-base tracking-[0.2em] uppercase mb-3">{t("about.label")}</p>

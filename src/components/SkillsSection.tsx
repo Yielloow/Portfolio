@@ -42,7 +42,7 @@ export default function SkillsSection() {
   if (skillStats.length === 0) return null;
 
   return (
-    <section id="skills" className="py-24 3xl:py-32 4k:py-40 px-6">
+    <section id="skills" className="py-16 3xl:py-24 4k:py-28 px-6">
       <div className="max-w-5xl 3xl:max-w-6xl 4k:max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

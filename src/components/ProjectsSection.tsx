@@ -28,7 +28,7 @@ export default function ProjectsSection() {
     : projects;
 
   return (
-    <section id="projects" className="py-24 3xl:py-32 4k:py-40 px-6">
+    <section id="projects" className="py-16 3xl:py-24 4k:py-28 px-6">
       <div className="max-w-6xl 3xl:max-w-7xl 4k:max-w-[1800px] mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="mb-12">
           <p className="text-primary font-heading text-sm 3xl:text-base tracking-[0.2em] uppercase mb-3">{t("projects.label")}</p>

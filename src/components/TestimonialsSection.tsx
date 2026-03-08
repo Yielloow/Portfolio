@@ -26,7 +26,7 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section id="testimonials" className="py-24 3xl:py-32 4k:py-40 px-6">
+    <section id="testimonials" className="py-16 3xl:py-24 4k:py-28 px-6">
       <div className="max-w-5xl 3xl:max-w-6xl 4k:max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <span className="text-xs 3xl:text-sm font-heading tracking-[0.3em] uppercase text-primary">
