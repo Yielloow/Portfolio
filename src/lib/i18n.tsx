@@ -76,6 +76,9 @@ const translations = {
   "skills.projects_plural": { fr: "projets", en: "projects" },
   "skills.projects_singular": { fr: "projet", en: "project" },
   "skills.hours_suffix": { fr: "h", en: "h" },
+  "skills.show_more": { fr: "Voir toutes les compétences", en: "Show all skills" },
+  "skills.show_less": { fr: "Réduire", en: "Show less" },
+  "skills.hours_suffix": { fr: "h", en: "h" },
 
   // Footer
   "footer.text": { fr: "© 2026 — Conçu avec passion", en: "© 2026 — Built with passion" },

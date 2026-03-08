@@ -1,13 +1,17 @@
-import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { getProjects } from "@/lib/projects";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
+const INITIAL_COUNT = 4;
+
 export default function SkillsSection() {
   const { lang, t } = useI18n();
   const projects = getProjects();
+  const [expanded, setExpanded] = useState(false);
 
   const skillStats = useMemo(() => {
     const map = new Map<string, { count: number; hours: number }>();
@@ -25,6 +29,8 @@ export default function SkillsSection() {
   }, [projects, lang]);
 
   const maxCount = skillStats[0]?.count || 1;
+  const visible = expanded ? skillStats : skillStats.slice(0, INITIAL_COUNT);
+  const hasMore = skillStats.length > INITIAL_COUNT;
 
   if (skillStats.length === 0) return null;
 
@@ -51,37 +57,61 @@ export default function SkillsSection() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 3xl:gap-6">
-          {skillStats.map((skill, i) => (
-            <motion.div
-              key={skill.name}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="glass-card rounded-xl p-5 3xl:p-6 hover:glow-accent transition-shadow duration-300"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-heading font-semibold text-foreground 3xl:text-lg">
-                  {skill.name}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {skill.count} {skill.count > 1 ? t("skills.projects_plural") : t("skills.projects_singular")}
-                  </Badge>
-                  {skill.hours > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      {skill.hours}{t("skills.hours_suffix")}
+          <AnimatePresence initial={false}>
+            {visible.map((skill, i) => (
+              <motion.div
+                key={skill.name}
+                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                animate={{ opacity: 1, height: "auto", scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, delay: i >= INITIAL_COUNT ? (i - INITIAL_COUNT) * 0.05 : 0 }}
+                className="glass-card rounded-xl p-5 3xl:p-6 hover:glow-accent transition-shadow duration-300"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-heading font-semibold text-foreground 3xl:text-lg">
+                    {skill.name}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {skill.count} {skill.count > 1 ? t("skills.projects_plural") : t("skills.projects_singular")}
                     </Badge>
-                  )}
+                    {skill.hours > 0 && (
+                      <Badge variant="outline" className="text-xs">
+                        {skill.hours}{t("skills.hours_suffix")}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <Progress
-                value={(skill.count / maxCount) * 100}
-                className="h-2"
-              />
-            </motion.div>
-          ))}
+                <Progress
+                  value={(skill.count / maxCount) * 100}
+                  className="h-2"
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
+
+        {hasMore && (
+          <motion.div
+            className="flex justify-center mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-border text-muted-foreground font-heading font-medium hover:text-foreground hover:border-primary/50 transition-colors"
+            >
+              {expanded ? t("skills.show_less") : t("skills.show_more")}
+              <motion.span
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.span>
+            </button>
+          </motion.div>
+        )}
       </div>
     </section>
   );
