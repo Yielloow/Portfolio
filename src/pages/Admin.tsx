@@ -57,6 +57,14 @@ export default function Admin() {
 
   // Testimonials
   const [testimonialItems, setTestimonialItems] = useState<Testimonial[]>(getTestimonials());
+  const [partnerItems, setPartnerItems] = useState<Partner[]>(getPartners());
+  const [showPartnerForm, setShowPartnerForm] = useState(false);
+  const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
+  const [partnerName, setPartnerName] = useState("");
+  const [partnerLogo, setPartnerLogo] = useState("");
+  const [partnerUrl, setPartnerUrl] = useState("");
+  const partnerLogoRef = useRef<HTMLInputElement>(null);
+
   const [showTimelineForm, setShowTimelineForm] = useState(false);
   const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
   const [tlTitle, setTlTitle] = useState("");
