@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Github, Linkedin, Mail, User } from "lucide-react";
+import { ArrowDown, Github, Linkedin, Mail, User, Download } from "lucide-react";
 import { getProfile } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 
