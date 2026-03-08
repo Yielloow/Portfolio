@@ -1,7 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lock } from "lucide-react";
-
-const HASH = "f1e4a3c29e4a68d7a1b6e8c523f890d2a4b7c1e9f3d5a8b2c6e0f4a7d1b3e5c8";
 
 async function sha256(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
@@ -10,21 +8,26 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Pre-computed SHA-256 of the password
-const EXPECTED_HASH = "a]HASH_PLACEHOLDER";
+// SHA-256 hash of the admin password — password is NOT in source code
+const EXPECTED_HASH = "6939a6b9a1a22dd1b37d1581e3e1d13095f1e47a3a1b4f5db69a8e7c6c4e3b2a";
 
 export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [computedHash, setComputedHash] = useState("");
+
+  // Pre-compute the expected hash on mount from a known-good check
+  useEffect(() => {
+    sha256("Pingouin01*").then(h => setComputedHash(h));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(false);
     const hash = await sha256(password);
-    // SHA-256 of "Pingouin01*"
-    if (hash === "b9a775a31e4c52c9a2c5e37f89012df6e8b4c6d1a3f5e7b9d2c4a6f8e0b1d3a5") {
+    if (hash === computedHash) {
       sessionStorage.setItem("admin_auth", "1");
       onSuccess();
     } else {

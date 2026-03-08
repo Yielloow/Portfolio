@@ -3,9 +3,13 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink } from "lucide-react";
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
 import { toast } from "sonner";
+import AdminLogin from "@/components/AdminLogin";
 
 export default function Admin() {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
   const [projects, setProjects] = useState<Project[]>(getProjects());
+
+  if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
