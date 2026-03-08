@@ -472,6 +472,56 @@ export default function Admin() {
             </div>
           </>
         )}
+
+        {/* ═══ TESTIMONIALS TAB ═══ */}
+        {tab === "testimonials" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading font-semibold text-lg">Témoignages reçus</h2>
+              <span className="text-sm text-muted-foreground">
+                {testimonialItems.filter((t) => !t.approved).length} en attente
+              </span>
+            </div>
+
+            {testimonialItems.length === 0 && (
+              <p className="text-muted-foreground text-center py-12">Aucun témoignage reçu.</p>
+            )}
+
+            {/* Pending first, then approved */}
+            {[...testimonialItems].sort((a, b) => (a.approved === b.approved ? 0 : a.approved ? 1 : -1)).map((t) => (
+              <div key={t.id} className={`glass-card rounded-xl p-5 flex items-start gap-4 ${!t.approved ? "border-primary/30" : ""}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-xs font-heading tracking-wider uppercase px-2.5 py-0.5 rounded-full ${t.approved ? "text-green-400 bg-green-400/10" : "text-primary bg-primary/10"}`}>
+                      {t.approved ? "✓ Publié" : "⏳ En attente"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{new Date(t.createdAt).toLocaleDateString("fr-FR")}</span>
+                  </div>
+                  <p className="font-heading font-semibold text-foreground text-sm">— {t.name}</p>
+                  <p className="text-muted-foreground text-sm mt-1">"{t.message}"</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  {!t.approved && (
+                    <button
+                      onClick={() => { setTestimonialItems(approveTestimonial(t.id)); toast.success("Témoignage publié !"); }}
+                      className="p-2 rounded-lg border border-border hover:border-green-500/50 text-muted-foreground hover:text-green-400 transition-colors"
+                      title="Approuver"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { setTestimonialItems(removeTestimonial(t.id)); toast.success("Témoignage supprimé"); }}
+                    className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
