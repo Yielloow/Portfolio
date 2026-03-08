@@ -263,6 +263,7 @@ export default function Admin() {
             { key: "projects" as Tab, icon: <FolderOpen className="w-4 h-4" />, label: "Projets" },
             { key: "timeline" as Tab, icon: <Route className="w-4 h-4" />, label: "Parcours" },
             { key: "testimonials" as Tab, icon: <MessageSquare className="w-4 h-4" />, label: "Témoignages" },
+            { key: "partners" as Tab, icon: <Handshake className="w-4 h-4" />, label: "Partenaires" },
           ]).map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)} className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-heading font-medium transition-colors ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
               {t.icon} {t.label}
