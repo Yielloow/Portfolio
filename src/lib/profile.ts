@@ -8,13 +8,12 @@ export interface Profile {
   location: string;
   github: string;
   linkedin: string;
-  // English translations
   description_en: string;
   tagline_en: string;
   location_en: string;
-  // CV files (base64 data URIs)
   cv_fr: string;
   cv_en: string;
+  testimonials_enabled: boolean;
 }
 
 const STORAGE_KEY = "portfolio_profile";
@@ -34,6 +33,7 @@ const defaultProfile: Profile = {
   location_en: "",
   cv_fr: "",
   cv_en: "",
+  testimonials_enabled: true,
 };
 
 export function getProfile(): Profile {
