@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-
-const links = [
-  { label: "À propos", href: "#about" },
-  { label: "Parcours", href: "#timeline" },
-  { label: "Projets", href: "#projects" },
-  { label: "Contact", href: "#contact" },
-];
+import { Menu, X, Globe } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { lang, setLang, t } = useI18n();
+
+  const links = [
+    { label: t("nav.about"), href: "#about" },
+    { label: t("nav.timeline"), href: "#timeline" },
+    { label: t("nav.projects"), href: "#projects" },
+    { label: t("nav.contact"), href: "#contact" },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -19,14 +21,21 @@ export default function Navbar() {
           Portfolio<span className="text-primary">.</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           {links.map((l) => (
             <a key={l.href} href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               {l.label}
             </a>
           ))}
+          <button
+            onClick={() => setLang(lang === "fr" ? "en" : "fr")}
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-foreground transition-colors font-medium"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            {lang === "fr" ? "EN" : "FR"}
+          </button>
           <Link to="/admin" className="text-sm px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium">
-            Admin
+            {t("nav.admin")}
           </Link>
         </div>
 
@@ -42,8 +51,15 @@ export default function Navbar() {
               {l.label}
             </a>
           ))}
+          <button
+            onClick={() => { setLang(lang === "fr" ? "en" : "fr"); setOpen(false); }}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            {lang === "fr" ? "English" : "Français"}
+          </button>
           <Link to="/admin" onClick={() => setOpen(false)} className="block text-sm text-primary font-medium">
-            Admin
+            {t("nav.admin")}
           </Link>
         </div>
       )}
