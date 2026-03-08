@@ -240,7 +240,10 @@ export default function Admin() {
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"><ArrowLeft className="w-4 h-4" /><span className="text-sm font-medium">Retour</span></Link>
           <h1 className="font-heading font-bold text-lg">Admin<span className="text-primary">.</span></h1>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors text-sm"><LogOut className="w-4 h-4" /> Déconnexion</button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowPasswordModal(true)} className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors text-sm"><KeyRound className="w-4 h-4" /> Mot de passe</button>
+            <button onClick={handleLogout} className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors text-sm"><LogOut className="w-4 h-4" /> Déconnexion</button>
+          </div>
         </div>
       </div>
 
