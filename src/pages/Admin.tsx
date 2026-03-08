@@ -66,6 +66,14 @@ export default function Admin() {
   const [partnerUrl, setPartnerUrl] = useState("");
   const partnerLogoRef = useRef<HTMLInputElement>(null);
 
+  // Skill hours
+  const [skillHoursMap, setSkillHoursMap] = useState<Record<string, number>>(() => {
+    const projects = getProjects();
+    const computed = computeSkillHoursFromProjects(projects);
+    const stored = getSkillHours();
+    return { ...computed, ...stored };
+  });
+
   const [showTimelineForm, setShowTimelineForm] = useState(false);
   const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
   const [tlTitle, setTlTitle] = useState("");
