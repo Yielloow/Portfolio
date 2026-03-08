@@ -12,7 +12,16 @@ import AdminLogin from "@/components/AdminLogin";
 type Tab = "profile" | "projects" | "timeline" | "testimonials";
 
 export default function Admin() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
+  const [authed, setAuthed] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check existing session on mount
+  useState(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setAuthed(true);
+      setCheckingAuth(false);
+    });
+  });
   const [projects, setProjects] = useState<Project[]>(getProjects());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

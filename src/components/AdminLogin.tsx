@@ -1,36 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Lock } from "lucide-react";
-
-async function sha256(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-const _a = [80,105,110,103,111,117,105,110,48,49,42];
-const _k = () => String.fromCharCode(..._a);
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [expectedHash, setExpectedHash] = useState("");
-
-  useEffect(() => {
-    sha256(_k()).then(setExpectedHash);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(false);
-    const hash = await sha256(password);
-    if (hash === expectedHash) {
-      sessionStorage.setItem("admin_auth", "1");
-      onSuccess();
+    setError("");
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setError("Email ou mot de passe incorrect");
     } else {
-      setError(true);
+      onSuccess();
     }
     setLoading(false);
   };
@@ -42,20 +33,27 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
           <Lock className="w-7 h-7 text-primary" />
         </div>
         <h1 className="font-heading font-bold text-xl text-foreground">Accès Admin</h1>
-        <div>
+        <div className="space-y-3">
           <input
-            type="password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(false); }}
-            placeholder="Mot de passe"
+            type="email"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(""); }}
+            placeholder="Email"
             className="w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors"
             autoFocus
           />
-          {error && <p className="text-destructive text-sm mt-2">Mot de passe incorrect</p>}
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(""); }}
+            placeholder="Mot de passe"
+            className="w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors"
+          />
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
         <button
           type="submit"
-          disabled={loading || !expectedHash}
+          disabled={loading}
           className="w-full bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {loading ? "Vérification..." : "Se connecter"}
