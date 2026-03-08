@@ -7,8 +7,10 @@ export default function PartnersMarquee() {
 
   if (partners.length === 0) return null;
 
-  // Exactly 2 identical halves for a seamless loop at -50%
-  const items = [...partners, ...partners];
+  // Repeat enough to fill viewport, always even count so we can translate by half
+  const repeatCount = Math.max(6, Math.ceil(20 / partners.length));
+  const evenCount = repeatCount % 2 === 0 ? repeatCount : repeatCount + 1;
+  const items = Array.from({ length: evenCount }, () => partners).flat();
 
   return (
     <section className="py-12 3xl:py-14 4k:py-16 overflow-hidden">
@@ -29,7 +31,7 @@ export default function PartnersMarquee() {
 
         <div
           className="flex gap-12 3xl:gap-16 items-center w-max animate-marquee"
-          style={{ "--marquee-duration": `${Math.max(30, partners.length * 12)}s` } as React.CSSProperties}
+          style={{ "--marquee-duration": `${Math.max(60, partners.length * 24)}s` } as React.CSSProperties}
         >
           {items.map((partner, i) => {
             const content = (
