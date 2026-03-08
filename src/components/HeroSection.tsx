@@ -38,8 +38,8 @@ export default function HeroSection() {
           <p className="text-muted-foreground text-lg md:text-xl 3xl:text-2xl 4k:text-3xl max-w-xl 3xl:max-w-2xl mx-auto mb-10 3xl:mb-14 font-body leading-relaxed">{desc}</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="flex items-center justify-center gap-5 flex-wrap">
-          <a href="#projects" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity">{t("hero.cta")}</a>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="flex items-center justify-center gap-5 3xl:gap-7 flex-wrap">
+          <a href="#projects" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3 3xl:px-9 3xl:py-4 3xl:text-lg rounded-lg font-heading font-medium hover:opacity-90 transition-opacity">{t("hero.cta")}</a>
           {cvUrl && (
             <a href={cvUrl} download={`CV_${profile.firstName}_${profile.lastName}_${lang.toUpperCase()}.pdf`} className="inline-flex items-center gap-2 border border-primary text-primary px-7 py-3 rounded-lg font-heading font-medium hover:bg-primary/10 transition-colors">
               <Download className="w-4 h-4" /> CV

@@ -40,7 +40,7 @@ export default function TestimonialsSection() {
 
         {/* Approved testimonials */}
         {testimonials.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-5 3xl:gap-6 mb-16">
             <AnimatePresence>
               {testimonials.map((t, i) => (
                 <motion.div

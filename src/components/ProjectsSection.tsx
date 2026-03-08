@@ -73,7 +73,7 @@ export default function ProjectsSection() {
         {filtered.length === 0 ? (
           <p className="text-muted-foreground text-center py-16">{t("projects.empty")}</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-6 3xl:gap-8">
             <AnimatePresence mode="popLayout">
               {filtered.map((project, i) => {
                 const pTitle = lang === "en" && project.title_en ? project.title_en : project.title;
