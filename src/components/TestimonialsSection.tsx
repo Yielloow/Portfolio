@@ -48,11 +48,13 @@ export default function TestimonialsSection() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.07, duration: 0.4 }}
-                  className="glass-card rounded-xl p-5 flex flex-col"
+                  className="glass-card rounded-xl p-6 flex flex-col justify-between h-[160px] border border-border/50"
                 >
-                  <MessageSquare className="w-5 h-5 text-primary/60 mb-3" />
-                  <p className="text-foreground text-sm leading-relaxed flex-1">"{t.message}"</p>
-                  <p className="text-primary font-heading font-medium text-sm mt-4">— {t.name}</p>
+                  <div className="flex items-start gap-3">
+                    <MessageSquare className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
+                    <p className="text-foreground text-sm leading-relaxed line-clamp-3">"{t.message}"</p>
+                  </div>
+                  <p className="text-primary font-heading font-medium text-xs tracking-wide mt-auto pt-3 border-t border-border/30">— {t.name}</p>
                 </motion.div>
               ))}
             </AnimatePresence>
