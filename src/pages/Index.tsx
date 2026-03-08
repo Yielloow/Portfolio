@@ -6,6 +6,7 @@ import TimelineSection from "@/components/TimelineSection";
 import ProjectsSection from "@/components/ProjectsSection";
 import ContactSection from "@/components/ContactSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import PartnersMarquee from "@/components/PartnersMarquee";
 import { useI18n } from "@/lib/i18n";
 import { getProfile } from "@/lib/profile";
 
@@ -18,7 +19,8 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <AboutSection />
-      <SkillsSection />
+      {profile.skills_enabled && <SkillsSection />}
+      {profile.partners_enabled && <PartnersMarquee />}
       <TimelineSection />
       <ProjectsSection />
       {profile.testimonials_enabled && <TestimonialsSection />}

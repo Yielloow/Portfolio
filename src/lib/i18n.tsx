@@ -79,6 +79,11 @@ const translations = {
   "skills.show_more": { fr: "Voir toutes les compétences", en: "Show all skills" },
   "skills.show_less": { fr: "Réduire", en: "Show less" },
 
+  // Partners
+  "partners.label": { fr: "Partenaires", en: "Partners" },
+  "partners.title_start": { fr: "Nos ", en: "Our " },
+  "partners.title_highlight": { fr: "partenaires", en: "partners" },
+
   // Footer
   "footer.text": { fr: "© 2026 — Conçu avec passion", en: "© 2026 — Built with passion" },
 
