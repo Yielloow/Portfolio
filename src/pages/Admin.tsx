@@ -1,12 +1,13 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, GripVertical, ChevronUp, ChevronDown, Route } from "lucide-react";
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
 import { getProfile, saveProfile, type Profile } from "@/lib/profile";
+import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 
-type Tab = "profile" | "projects";
+type Tab = "profile" | "projects" | "timeline";
 
 export default function Admin() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
@@ -28,6 +29,17 @@ export default function Admin() {
   const [profile, setProfile] = useState<Profile>(getProfile());
   const photoInputRef = useRef<HTMLInputElement>(null);
   const projectImgRef = useRef<HTMLInputElement>(null);
+
+  // Timeline
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>(getTimeline());
+  const [showTimelineForm, setShowTimelineForm] = useState(false);
+  const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
+  const [tlTitle, setTlTitle] = useState("");
+  const [tlOrg, setTlOrg] = useState("");
+  const [tlDesc, setTlDesc] = useState("");
+  const [tlStart, setTlStart] = useState("");
+  const [tlEnd, setTlEnd] = useState("");
+  const [tlType, setTlType] = useState<TimelineItem["type"]>("education");
 
   if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
 
@@ -67,9 +79,7 @@ export default function Admin() {
     e.target.value = "";
   };
 
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
+  const removeImage = (index: number) => setImages((prev) => prev.filter((_, i) => i !== index));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,15 +89,10 @@ export default function Admin() {
     }
     const skills = skillsStr.split(",").map((s) => s.trim()).filter(Boolean);
     const data: Omit<Project, "id"> = {
-      title: title.trim(),
-      description: description.trim(),
-      domain: domain.trim(),
-      skills,
-      link: link.trim() || undefined,
-      hours: hours ? Number(hours) : undefined,
+      title: title.trim(), description: description.trim(), domain: domain.trim(), skills,
+      link: link.trim() || undefined, hours: hours ? Number(hours) : undefined,
       images: images.length > 0 ? images : undefined,
     };
-
     if (editingId) {
       setProjects(updateProject(editingId, data));
       toast.success("Projet mis à jour !");
@@ -110,6 +115,56 @@ export default function Admin() {
     toast.success("Projet supprimé");
   };
 
+  // ─── Timeline ───
+  const resetTimelineForm = () => {
+    setTlTitle(""); setTlOrg(""); setTlDesc(""); setTlStart(""); setTlEnd(""); setTlType("education");
+    setShowTimelineForm(false); setEditingTimelineId(null);
+  };
+
+  const handleTimelineSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tlTitle.trim() || !tlOrg.trim() || !tlStart.trim() || !tlEnd.trim()) {
+      toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+    const data: Omit<TimelineItem, "id"> = {
+      title: tlTitle.trim(), organization: tlOrg.trim(), description: tlDesc.trim(),
+      startDate: tlStart.trim(), endDate: tlEnd.trim(), type: tlType,
+    };
+    if (editingTimelineId) {
+      setTimelineItems(updateTimelineItem(editingTimelineId, data));
+      toast.success("Élément mis à jour !");
+    } else {
+      setTimelineItems(addTimelineItem(data));
+      toast.success("Élément ajouté !");
+    }
+    resetTimelineForm();
+  };
+
+  const startTimelineEdit = (item: TimelineItem) => {
+    setTlTitle(item.title); setTlOrg(item.organization); setTlDesc(item.description);
+    setTlStart(item.startDate); setTlEnd(item.endDate); setTlType(item.type);
+    setEditingTimelineId(item.id); setShowTimelineForm(true);
+  };
+
+  const handleTimelineDelete = (id: string) => {
+    setTimelineItems(removeTimelineItem(id));
+    toast.success("Élément supprimé");
+  };
+
+  const moveItem = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= timelineItems.length) return;
+    setTimelineItems(reorderTimeline(index, newIndex));
+  };
+
+  const typeLabels: Record<TimelineItem["type"], string> = {
+    education: "🎓 Formation",
+    work: "💼 Expérience",
+    project: "🚀 Projet",
+    other: "⭐ Autre",
+  };
+
   const inputCls = "w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors";
 
   return (
@@ -121,9 +176,7 @@ export default function Admin() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Retour</span>
           </Link>
-          <h1 className="font-heading font-bold text-lg">
-            Admin<span className="text-primary">.</span>
-          </h1>
+          <h1 className="font-heading font-bold text-lg">Admin<span className="text-primary">.</span></h1>
           <button onClick={handleLogout} className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors text-sm">
             <LogOut className="w-4 h-4" /> Déconnexion
           </button>
@@ -133,18 +186,19 @@ export default function Admin() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Tabs */}
         <div className="flex gap-1 mb-8 bg-secondary/50 p-1 rounded-lg w-fit">
-          <button
-            onClick={() => setTab("profile")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-heading font-medium transition-colors ${tab === "profile" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            <User className="w-4 h-4" /> Profil
-          </button>
-          <button
-            onClick={() => setTab("projects")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-heading font-medium transition-colors ${tab === "projects" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            <FolderOpen className="w-4 h-4" /> Projets
-          </button>
+          {([
+            { key: "profile" as Tab, icon: <User className="w-4 h-4" />, label: "Profil" },
+            { key: "projects" as Tab, icon: <FolderOpen className="w-4 h-4" />, label: "Projets" },
+            { key: "timeline" as Tab, icon: <Route className="w-4 h-4" />, label: "Parcours" },
+          ]).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-heading font-medium transition-colors ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t.icon} {t.label}
+            </button>
+          ))}
         </div>
 
         {/* ═══ PROFILE TAB ═══ */}
@@ -152,7 +206,6 @@ export default function Admin() {
           <div className="glass-card rounded-xl p-6 space-y-6">
             <h2 className="font-heading font-semibold text-lg">Informations personnelles</h2>
 
-            {/* Photo */}
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 rounded-full bg-secondary border-2 border-border overflow-hidden flex items-center justify-center shrink-0">
                 {profile.photo ? (
@@ -170,7 +223,6 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Prénom</label>
@@ -182,19 +234,16 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* Tagline */}
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">Accroche (sous le nom)</label>
               <input value={profile.tagline} onChange={(e) => setProfile((p) => ({ ...p, tagline: e.target.value }))} className={inputCls} placeholder="Étudiant en dernière année" />
             </div>
 
-            {/* Description */}
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">Présentation</label>
-              <textarea value={profile.description} onChange={(e) => setProfile((p) => ({ ...p, description: e.target.value }))} rows={4} className={`${inputCls} resize-none`} placeholder="Parlez de vous..." />
+              <textarea value={profile.description} onChange={(e) => setProfile((p) => ({ ...p, description: e.target.value }))} rows={4} className={`${inputCls} resize-none`} />
             </div>
 
-            {/* Contact info */}
             <h3 className="font-heading font-semibold text-base pt-2">Coordonnées & liens</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -225,10 +274,7 @@ export default function Admin() {
         {tab === "projects" && (
           <>
             {!showForm && (
-              <button
-                onClick={() => { resetForm(); setShowForm(true); }}
-                className="mb-8 flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"
-              >
+              <button onClick={() => { resetForm(); setShowForm(true); }} className="mb-8 flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity">
                 <Plus className="w-4 h-4" /> Ajouter un projet
               </button>
             )}
@@ -236,120 +282,159 @@ export default function Admin() {
             {showForm && (
               <form onSubmit={handleSubmit} className="glass-card rounded-xl p-6 mb-8 space-y-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="font-heading font-semibold text-lg">
-                    {editingId ? "Modifier le projet" : "Nouveau projet"}
-                  </h2>
-                  <button type="button" onClick={resetForm} className="text-muted-foreground hover:text-foreground">
-                    <X className="w-5 h-5" />
-                  </button>
+                  <h2 className="font-heading font-semibold text-lg">{editingId ? "Modifier le projet" : "Nouveau projet"}</h2>
+                  <button type="button" onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Titre *</label>
-                    <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="Mon projet" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Domaine *</label>
-                    <input value={domain} onChange={(e) => setDomain(e.target.value)} className={inputCls} placeholder="Web, Mobile, Data..." />
-                  </div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Titre *</label><input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="Mon projet" /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Domaine *</label><input value={domain} onChange={(e) => setDomain(e.target.value)} className={inputCls} placeholder="Web, Mobile, Data..." /></div>
                 </div>
-
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Description *</label>
-                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={`${inputCls} resize-none`} placeholder="Décrivez votre projet en détail..." />
-                </div>
-
+                <div><label className="text-sm text-muted-foreground mb-1 block">Description *</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={`${inputCls} resize-none`} placeholder="Décrivez votre projet en détail..." /></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Compétences * (virgules)</label>
-                    <input value={skillsStr} onChange={(e) => setSkillsStr(e.target.value)} className={inputCls} placeholder="React, Python..." />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Lien (optionnel)</label>
-                    <input value={link} onChange={(e) => setLink(e.target.value)} className={inputCls} placeholder="https://..." />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Heures passées</label>
-                    <input type="number" min="0" value={hours} onChange={(e) => setHours(e.target.value)} className={inputCls} placeholder="120" />
-                  </div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Compétences * (virgules)</label><input value={skillsStr} onChange={(e) => setSkillsStr(e.target.value)} className={inputCls} placeholder="React, Python..." /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Lien (optionnel)</label><input value={link} onChange={(e) => setLink(e.target.value)} className={inputCls} placeholder="https://..." /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Heures passées</label><input type="number" min="0" value={hours} onChange={(e) => setHours(e.target.value)} className={inputCls} placeholder="120" /></div>
                 </div>
-
-                {/* Image uploads */}
                 <div>
                   <label className="text-sm text-muted-foreground mb-2 block flex items-center gap-1"><Image className="w-3.5 h-3.5" /> Photos du projet</label>
                   <div className="flex flex-wrap gap-3">
                     {images.map((img, i) => (
                       <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border/50 group">
                         <img src={img} alt="" className="w-full h-full object-cover" />
-                        <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </button>
+                        <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4 text-destructive" /></button>
                       </div>
                     ))}
                     <button type="button" onClick={() => projectImgRef.current?.click()} className="w-24 h-24 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors">
-                      <Plus className="w-5 h-5" />
-                      <span className="text-xs mt-1">Ajouter</span>
+                      <Plus className="w-5 h-5" /><span className="text-xs mt-1">Ajouter</span>
                     </button>
                     <input ref={projectImgRef} type="file" accept="image/*" multiple onChange={handleProjectImgUpload} className="hidden" />
                   </div>
                 </div>
-
                 <div className="flex gap-3 pt-2">
-                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity">
-                    <Save className="w-4 h-4" /> {editingId ? "Mettre à jour" : "Ajouter"}
-                  </button>
-                  <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">
-                    Annuler
-                  </button>
+                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> {editingId ? "Mettre à jour" : "Ajouter"}</button>
+                  <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">Annuler</button>
                 </div>
               </form>
             )}
 
-            {/* Project list */}
             <div className="space-y-4">
-              {projects.length === 0 && (
-                <p className="text-muted-foreground text-center py-12">Aucun projet. Ajoutez-en un !</p>
-              )}
+              {projects.length === 0 && <p className="text-muted-foreground text-center py-12">Aucun projet. Ajoutez-en un !</p>}
               {projects.map((p) => (
                 <div key={p.id} className="glass-card rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4">
-                  {/* Thumbnail */}
                   {p.images && p.images.length > 0 && (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-border/50 shrink-0">
-                      <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
-                    </div>
+                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-border/50 shrink-0"><img src={p.images[0]} alt="" className="w-full h-full object-cover" /></div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-heading tracking-wider uppercase text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                        {p.domain}
-                      </span>
-                      {p.hours && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {p.hours}h
-                        </span>
-                      )}
-                      {p.link && (
-                        <a href={p.link} target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary">
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      )}
+                      <span className="text-xs font-heading tracking-wider uppercase text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">{p.domain}</span>
+                      {p.hours && <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" /> {p.hours}h</span>}
+                      {p.link && <a href={p.link} target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary"><ExternalLink className="w-3.5 h-3.5" /></a>}
                     </div>
                     <h3 className="font-heading font-semibold text-foreground">{p.title}</h3>
                     <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{p.description}</p>
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      {p.skills.map((s) => (
-                        <span key={s} className="text-xs px-2 py-0.5 rounded bg-secondary text-secondary-foreground">{s}</span>
-                      ))}
+                      {p.skills.map((s) => <span key={s} className="text-xs px-2 py-0.5 rounded bg-secondary text-secondary-foreground">{s}</span>)}
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => startEdit(p)} className="p-2 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors">
-                      <Edit2 className="w-4 h-4" />
+                    <button onClick={() => startEdit(p)} className="p-2 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ═══ TIMELINE TAB ═══ */}
+        {tab === "timeline" && (
+          <>
+            {!showTimelineForm && (
+              <button onClick={() => { resetTimelineForm(); setShowTimelineForm(true); }} className="mb-8 flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity">
+                <Plus className="w-4 h-4" /> Ajouter une étape
+              </button>
+            )}
+
+            {showTimelineForm && (
+              <form onSubmit={handleTimelineSubmit} className="glass-card rounded-xl p-6 mb-8 space-y-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-heading font-semibold text-lg">{editingTimelineId ? "Modifier l'étape" : "Nouvelle étape"}</h2>
+                  <button type="button" onClick={resetTimelineForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Titre *</label><input value={tlTitle} onChange={(e) => setTlTitle(e.target.value)} className={inputCls} placeholder="Bachelier en Informatique" /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1 block">Organisation *</label><input value={tlOrg} onChange={(e) => setTlOrg(e.target.value)} className={inputCls} placeholder="Nom de l'école, entreprise..." /></div>
+                </div>
+
+                <div><label className="text-sm text-muted-foreground mb-1 block">Description</label><textarea value={tlDesc} onChange={(e) => setTlDesc(e.target.value)} rows={3} className={`${inputCls} resize-none`} placeholder="Décrivez cette étape..." /></div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Date début * (AAAA-MM)</label>
+                    <input value={tlStart} onChange={(e) => setTlStart(e.target.value)} className={inputCls} placeholder="2022-09" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Date fin * (AAAA-MM ou "present")</label>
+                    <input value={tlEnd} onChange={(e) => setTlEnd(e.target.value)} className={inputCls} placeholder="2025-06 ou present" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Type</label>
+                    <select value={tlType} onChange={(e) => setTlType(e.target.value as TimelineItem["type"])} className={inputCls}>
+                      <option value="education">🎓 Formation</option>
+                      <option value="work">💼 Expérience</option>
+                      <option value="project">🚀 Projet</option>
+                      <option value="other">⭐ Autre</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> {editingTimelineId ? "Mettre à jour" : "Ajouter"}</button>
+                  <button type="button" onClick={resetTimelineForm} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">Annuler</button>
+                </div>
+              </form>
+            )}
+
+            <p className="text-sm text-muted-foreground mb-4">Utilisez les flèches pour réorganiser l'ordre d'affichage.</p>
+
+            <div className="space-y-3">
+              {timelineItems.length === 0 && <p className="text-muted-foreground text-center py-12">Aucune étape. Ajoutez-en une !</p>}
+              {timelineItems.map((item, index) => (
+                <div key={item.id} className="glass-card rounded-xl p-5 flex items-start gap-4">
+                  {/* Reorder controls */}
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <button
+                      onClick={() => moveItem(index, "up")}
+                      disabled={index === 0}
+                      className="p-1.5 rounded-md border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    >
+                      <ChevronUp className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors">
-                      <Trash2 className="w-4 h-4" />
+                    <button
+                      onClick={() => moveItem(index, "down")}
+                      disabled={index === timelineItems.length - 1}
+                      className="p-1.5 rounded-md border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    >
+                      <ChevronDown className="w-4 h-4" />
                     </button>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-heading tracking-wider uppercase text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                        {typeLabels[item.type]}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{item.startDate} → {item.endDate === "present" ? "Présent" : item.endDate}</span>
+                    </div>
+                    <h3 className="font-heading font-semibold text-foreground">{item.title}</h3>
+                    <p className="text-primary/80 text-sm font-medium">{item.organization}</p>
+                    {item.description && <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{item.description}</p>}
+                  </div>
+
+                  <div className="flex gap-2 shrink-0">
+                    <button onClick={() => startTimelineEdit(item)} className="p-2 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleTimelineDelete(item.id)} className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               ))}
