@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload, MessageSquare, Check } from "lucide-react";
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
@@ -8,11 +8,20 @@ import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonia
 import { translateTexts } from "@/lib/translate";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "profile" | "projects" | "timeline" | "testimonials";
 
 export default function Admin() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
+  const [authed, setAuthed] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setAuthed(true);
+      setCheckingAuth(false);
+    });
+  }, []);
   const [projects, setProjects] = useState<Project[]>(getProjects());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,9 +64,10 @@ export default function Admin() {
   const [tlOrgEn, setTlOrgEn] = useState("");
   const [tlDescEn, setTlDescEn] = useState("");
 
+  if (checkingAuth) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
 
-  const handleLogout = () => { sessionStorage.removeItem("admin_auth"); setAuthed(false); };
+  const handleLogout = async () => { await supabase.auth.signOut(); setAuthed(false); };
 
   const inputCls = "w-full bg-secondary text-foreground rounded-lg px-4 py-2.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors";
   const inputEnCls = "w-full bg-secondary/70 text-foreground rounded-lg px-4 py-2.5 text-sm border border-blue-500/30 focus:border-blue-500 focus:outline-none transition-colors";
