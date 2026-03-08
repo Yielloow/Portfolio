@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getProjects } from "@/lib/projects";
 
 export default function ProjectsSection() {
   const projects = getProjects();
-
-  const allDomains = ["Tous", ...Array.from(new Set(projects.map((p) => p.domain)))];
 
   return (
     <section id="projects" className="py-24 px-6">
@@ -34,41 +33,62 @@ export default function ProjectsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="glass-card rounded-xl p-6 flex flex-col group hover:glow-accent transition-shadow duration-300"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="text-xs font-heading tracking-wider uppercase text-primary bg-primary/10 px-3 py-1 rounded-full">
-                    {project.domain}
-                  </span>
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                <Link
+                  to={`/project/${project.id}`}
+                  className="glass-card rounded-xl flex flex-col group hover:glow-accent transition-shadow duration-300 overflow-hidden block"
+                >
+                  {/* Thumbnail */}
+                  {project.images && project.images.length > 0 && (
+                    <div className="aspect-video overflow-hidden">
+                      <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
                   )}
-                </div>
 
-                <h3 className="font-heading text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {project.title}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed flex-1 mb-4">
-                  {project.description}
-                </p>
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-start justify-between mb-4">
+                      <span className="text-xs font-heading tracking-wider uppercase text-primary bg-primary/10 px-3 py-1 rounded-full">
+                        {project.domain}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {project.hours && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {project.hours}h
+                          </span>
+                        )}
+                        {project.link && (
+                          <a
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {project.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="text-xs px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground font-medium"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
+                    <h3 className="font-heading text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                      {project.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed flex-1 mb-4 line-clamp-3">
+                      {project.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {project.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="text-xs px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground font-medium"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>

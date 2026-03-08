@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Code, Database, Smartphone, Brain } from "lucide-react";
+import { getProfile } from "@/lib/profile";
 
 const skills = [
   { icon: Code, label: "Développement Web", desc: "React, TypeScript, Node.js" },
@@ -9,6 +10,8 @@ const skills = [
 ];
 
 export default function AboutSection() {
+  const profile = getProfile();
+
   return (
     <section id="about" className="py-24 px-6">
       <div className="max-w-5xl mx-auto">
@@ -23,7 +26,7 @@ export default function AboutSection() {
             Un parcours guidé par la <span className="text-gradient">curiosité</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed mb-16">
-            En dernière année d'études universitaires, je combine rigueur académique et projets concrets pour développer des compétences solides en informatique. Mon objectif : créer des solutions qui font la différence.
+            {profile.description}
           </p>
         </motion.div>
 
