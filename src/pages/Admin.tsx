@@ -8,16 +8,15 @@ import AdminLogin from "@/components/AdminLogin";
 export default function Admin() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
   const [projects, setProjects] = useState<Project[]>(getProjects());
-
-  if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [domain, setDomain] = useState("");
   const [skillsStr, setSkillsStr] = useState("");
   const [link, setLink] = useState("");
+
+  if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
 
   const resetForm = () => {
     setTitle(""); setDescription(""); setDomain(""); setSkillsStr(""); setLink("");
