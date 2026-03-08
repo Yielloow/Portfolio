@@ -12,6 +12,9 @@ export interface Profile {
   description_en: string;
   tagline_en: string;
   location_en: string;
+  // CV files (base64 data URIs)
+  cv_fr: string;
+  cv_en: string;
 }
 
 const STORAGE_KEY = "portfolio_profile";
