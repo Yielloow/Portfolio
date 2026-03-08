@@ -19,7 +19,7 @@ const defaultProfile: Profile = {
   description: "En dernière année d'études universitaires, je combine rigueur académique et projets concrets pour développer des compétences solides en informatique. Mon objectif : créer des solutions qui font la différence.",
   tagline: "Étudiant en dernière année",
   email: "etudiant@universite.fr",
-  location: "France",
+  location: "Belgique",
   github: "https://github.com",
   linkedin: "https://linkedin.com",
 };
