@@ -37,6 +37,7 @@ const translations = {
   "projects.title_start": { fr: "Mes ", en: "My " },
   "projects.title_highlight": { fr: "projets", en: "projects" },
   "projects.empty": { fr: "Aucun projet pour le moment.", en: "No projects yet." },
+  "projects.all": { fr: "Tous", en: "All" },
   "projects.hours": { fr: "h investies", en: "h invested" },
   "projects.view": { fr: "Voir le projet", en: "View project" },
 

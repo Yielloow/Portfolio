@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Github, Linkedin, Mail, User } from "lucide-react";
+import { ArrowDown, Github, Linkedin, Mail, User, Download } from "lucide-react";
 import { getProfile } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 
@@ -9,6 +9,7 @@ export default function HeroSection() {
 
   const tagline = lang === "en" && profile.tagline_en ? profile.tagline_en : profile.tagline;
   const desc = lang === "en" && profile.description_en ? profile.description_en : profile.description;
+  const cvUrl = lang === "en" && profile.cv_en ? profile.cv_en : profile.cv_fr || null;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -37,8 +38,13 @@ export default function HeroSection() {
           <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-10 font-body leading-relaxed">{desc}</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="flex items-center justify-center gap-5">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="flex items-center justify-center gap-5 flex-wrap">
           <a href="#projects" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity">{t("hero.cta")}</a>
+          {cvUrl && (
+            <a href={cvUrl} download={`CV_${profile.firstName}_${profile.lastName}_${lang.toUpperCase()}.pdf`} className="inline-flex items-center gap-2 border border-primary text-primary px-7 py-3 rounded-lg font-heading font-medium hover:bg-primary/10 transition-colors">
+              <Download className="w-4 h-4" /> CV
+            </a>
+          )}
           <div className="flex gap-3">
             <a href="#contact" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors"><Mail className="w-5 h-5" /></a>
             {profile.github && <a href={profile.github} target="_blank" rel="noopener" className="p-3 rounded-lg border border-border hover:border-primary/50 transition-colors"><Github className="w-5 h-5" /></a>}
