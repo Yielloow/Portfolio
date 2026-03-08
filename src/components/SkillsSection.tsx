@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { getProjects } from "@/lib/projects";
-import { getSkillHours, computeSkillHoursFromProjects, saveSkillHours } from "@/lib/skillHours";
+import { getSkillHours } from "@/lib/skillHours";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
