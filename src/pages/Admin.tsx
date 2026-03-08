@@ -8,6 +8,7 @@ import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonia
 import { translateTexts } from "@/lib/translate";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "profile" | "projects" | "timeline" | "testimonials";
 
