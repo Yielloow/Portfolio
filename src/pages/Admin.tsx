@@ -34,6 +34,8 @@ export default function Admin() {
   const [profile, setProfile] = useState<Profile>(getProfile());
   const photoInputRef = useRef<HTMLInputElement>(null);
   const projectImgRef = useRef<HTMLInputElement>(null);
+  const cvFrRef = useRef<HTMLInputElement>(null);
+  const cvEnRef = useRef<HTMLInputElement>(null);
 
   // Timeline
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>(getTimeline());
