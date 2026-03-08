@@ -17,6 +17,7 @@ const Index = () => {
       <AboutSection />
       <TimelineSection />
       <ProjectsSection />
+      <TestimonialsSection />
       <ContactSection />
       <footer className="py-8 text-center text-muted-foreground text-sm border-t border-border/50">
         <p>{t("footer.text")}</p>
