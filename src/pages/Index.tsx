@@ -4,8 +4,11 @@ import AboutSection from "@/components/AboutSection";
 import TimelineSection from "@/components/TimelineSection";
 import ProjectsSection from "@/components/ProjectsSection";
 import ContactSection from "@/components/ContactSection";
+import { useI18n } from "@/lib/i18n";
 
 const Index = () => {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -15,7 +18,7 @@ const Index = () => {
       <ProjectsSection />
       <ContactSection />
       <footer className="py-8 text-center text-muted-foreground text-sm border-t border-border/50">
-        <p>© 2026 — Conçu avec passion</p>
+        <p>{t("footer.text")}</p>
       </footer>
     </div>
   );
