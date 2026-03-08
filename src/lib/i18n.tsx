@@ -68,6 +68,15 @@ const translations = {
   "testimonials.thanks": { fr: "Merci pour votre témoignage !", en: "Thanks for your testimonial!" },
   "testimonials.pending": { fr: "Il sera visible après validation par l'admin.", en: "It will be visible after admin approval." },
 
+  // Skills
+  "skills.label": { fr: "Compétences", en: "Skills" },
+  "skills.title_start": { fr: "Mes ", en: "My " },
+  "skills.title_highlight": { fr: "compétences", en: "skills" },
+  "skills.desc": { fr: "Technologies et outils maîtrisés à travers mes projets.", en: "Technologies and tools mastered through my projects." },
+  "skills.projects_plural": { fr: "projets", en: "projects" },
+  "skills.projects_singular": { fr: "projet", en: "project" },
+  "skills.hours_suffix": { fr: "h", en: "h" },
+
   // Footer
   "footer.text": { fr: "© 2026 — Conçu avec passion", en: "© 2026 — Built with passion" },
 

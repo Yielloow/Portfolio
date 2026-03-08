@@ -18,6 +18,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <AboutSection />
+      <SkillsSection />
       <TimelineSection />
       <ProjectsSection />
       {profile.testimonials_enabled && <TestimonialsSection />}
