@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getProjects } from "@/lib/projects";
