@@ -24,7 +24,7 @@ export default function HeroSection() {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
           {profile.photo ? (
             <div className="w-44 h-44 md:w-52 md:h-52 3xl:w-60 3xl:h-60 4k:w-72 4k:h-72 rounded-full mx-auto mb-4 3xl:mb-6 border-2 border-primary/30 overflow-hidden">
-              <img src={profile.photo} alt={`${profile.firstName} ${profile.lastName}`} className="w-full h-full object-cover" />
+              <img src={profile.photo} alt={`${profile.firstName} ${profile.lastName}`} className="w-full h-full object-cover" loading="eager" />
             </div>
           ) : (
             <div className="w-44 h-44 md:w-52 md:h-52 3xl:w-60 3xl:h-60 4k:w-72 4k:h-72 rounded-full mx-auto mb-4 3xl:mb-6 border-2 border-primary/30 bg-secondary flex items-center justify-center">
