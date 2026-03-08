@@ -273,6 +273,32 @@ export default function Admin() {
               <div><label className="text-sm text-muted-foreground mb-1 block">LinkedIn</label><input value={profile.linkedin} onChange={(e) => setProfile((p) => ({ ...p, linkedin: e.target.value }))} className={inputCls} /></div>
             </div>
 
+            <h3 className="font-heading font-semibold text-base pt-2">CV / Résumé (PDF)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> 🇫🇷 CV Français</label>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => cvFrRef.current?.click()} className="flex items-center gap-2 text-sm bg-secondary text-foreground px-4 py-2 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                    <Upload className="w-4 h-4" /> {profile.cv_fr ? "Remplacer" : "Uploader"}
+                  </button>
+                  {profile.cv_fr && <span className="text-xs text-primary">✓ Uploadé</span>}
+                  {profile.cv_fr && <button type="button" onClick={() => setProfile((p) => ({ ...p, cv_fr: "" }))} className="text-xs text-destructive hover:underline">Supprimer</button>}
+                </div>
+                <input ref={cvFrRef} type="file" accept="application/pdf" onChange={handleCvUpload("fr")} className="hidden" />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> 🇬🇧 CV English</label>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => cvEnRef.current?.click()} className="flex items-center gap-2 text-sm bg-secondary text-foreground px-4 py-2 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                    <Upload className="w-4 h-4" /> {profile.cv_en ? "Remplacer" : "Uploader"}
+                  </button>
+                  {profile.cv_en && <span className="text-xs text-primary">✓ Uploadé</span>}
+                  {profile.cv_en && <button type="button" onClick={() => setProfile((p) => ({ ...p, cv_en: "" }))} className="text-xs text-destructive hover:underline">Supprimer</button>}
+                </div>
+                <input ref={cvEnRef} type="file" accept="application/pdf" onChange={handleCvUpload("en")} className="hidden" />
+              </div>
+            </div>
+
             <button onClick={handleProfileSave} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> Enregistrer le profil</button>
           </div>
         )}
