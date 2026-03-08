@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X, Globe, Sun, Moon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { lang, setLang, t } = useI18n();
+  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { label: t("nav.about"), href: "#about" },
@@ -34,6 +36,13 @@ export default function Navbar() {
             <Globe className="w-3.5 h-3.5" />
             {lang === "fr" ? "EN" : "FR"}
           </button>
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-foreground transition-colors font-medium"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </button>
           <Link to="/admin" className="text-sm px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium">
             {t("nav.admin")}
           </Link>
@@ -57,6 +66,13 @@ export default function Navbar() {
           >
             <Globe className="w-3.5 h-3.5" />
             {lang === "fr" ? "English" : "Français"}
+          </button>
+          <button
+            onClick={() => { toggleTheme(); setOpen(false); }}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {theme === "dark" ? "Light" : "Dark"}
           </button>
           <Link to="/admin" onClick={() => setOpen(false)} className="block text-sm text-primary font-medium">
             {t("nav.admin")}
