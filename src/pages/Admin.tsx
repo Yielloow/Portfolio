@@ -1,14 +1,15 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload, MessageSquare, Check } from "lucide-react";
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
 import { getProfile, saveProfile, type Profile } from "@/lib/profile";
 import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
+import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonial } from "@/lib/testimonials";
 import { translateTexts } from "@/lib/translate";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 
-type Tab = "profile" | "projects" | "timeline";
+type Tab = "profile" | "projects" | "timeline" | "testimonials";
 
 export default function Admin() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
@@ -39,6 +40,9 @@ export default function Admin() {
 
   // Timeline
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>(getTimeline());
+
+  // Testimonials
+  const [testimonialItems, setTestimonialItems] = useState<Testimonial[]>(getTestimonials());
   const [showTimelineForm, setShowTimelineForm] = useState(false);
   const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
   const [tlTitle, setTlTitle] = useState("");
@@ -221,6 +225,7 @@ export default function Admin() {
             { key: "profile" as Tab, icon: <User className="w-4 h-4" />, label: "Profil" },
             { key: "projects" as Tab, icon: <FolderOpen className="w-4 h-4" />, label: "Projets" },
             { key: "timeline" as Tab, icon: <Route className="w-4 h-4" />, label: "Parcours" },
+            { key: "testimonials" as Tab, icon: <MessageSquare className="w-4 h-4" />, label: "Témoignages" },
           ]).map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)} className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-heading font-medium transition-colors ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
               {t.icon} {t.label}
@@ -465,6 +470,56 @@ export default function Admin() {
               ))}
             </div>
           </>
+        )}
+
+        {/* ═══ TESTIMONIALS TAB ═══ */}
+        {tab === "testimonials" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading font-semibold text-lg">Témoignages reçus</h2>
+              <span className="text-sm text-muted-foreground">
+                {testimonialItems.filter((t) => !t.approved).length} en attente
+              </span>
+            </div>
+
+            {testimonialItems.length === 0 && (
+              <p className="text-muted-foreground text-center py-12">Aucun témoignage reçu.</p>
+            )}
+
+            {/* Pending first, then approved */}
+            {[...testimonialItems].sort((a, b) => (a.approved === b.approved ? 0 : a.approved ? 1 : -1)).map((t) => (
+              <div key={t.id} className={`glass-card rounded-xl p-5 flex items-start gap-4 ${!t.approved ? "border-primary/30" : ""}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-xs font-heading tracking-wider uppercase px-2.5 py-0.5 rounded-full ${t.approved ? "text-green-400 bg-green-400/10" : "text-primary bg-primary/10"}`}>
+                      {t.approved ? "✓ Publié" : "⏳ En attente"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{new Date(t.createdAt).toLocaleDateString("fr-FR")}</span>
+                  </div>
+                  <p className="font-heading font-semibold text-foreground text-sm">— {t.name}</p>
+                  <p className="text-muted-foreground text-sm mt-1">"{t.message}"</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  {!t.approved && (
+                    <button
+                      onClick={() => { setTestimonialItems(approveTestimonial(t.id)); toast.success("Témoignage publié !"); }}
+                      className="p-2 rounded-lg border border-border hover:border-green-500/50 text-muted-foreground hover:text-green-400 transition-colors"
+                      title="Approuver"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { setTestimonialItems(removeTestimonial(t.id)); toast.success("Témoignage supprimé"); }}
+                    className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

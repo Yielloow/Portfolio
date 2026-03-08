@@ -55,6 +55,19 @@ const translations = {
   "contact.title_highlight": { fr: "ensemble", en: "together" },
   "contact.desc": { fr: "Vous avez un projet en tête ou souhaitez en savoir plus ? N'hésitez pas à me contacter.", en: "Have a project in mind or want to learn more? Don't hesitate to reach out." },
 
+  // Testimonials
+  "testimonials.label": { fr: "Témoignages", en: "Testimonials" },
+  "testimonials.title_start": { fr: "Ce qu'ils ", en: "What they " },
+  "testimonials.title_highlight": { fr: "disent", en: "say" },
+  "testimonials.form_title": { fr: "Laissez un mot !", en: "Leave a word!" },
+  "testimonials.name_placeholder": { fr: "Votre nom", en: "Your name" },
+  "testimonials.message_placeholder": { fr: "Votre message (50 car. max)", en: "Your message (50 chars max)" },
+  "testimonials.submit": { fr: "Envoyer", en: "Send" },
+  "testimonials.error": { fr: "Veuillez remplir tous les champs", en: "Please fill in all fields" },
+  "testimonials.success": { fr: "Merci ! Votre témoignage est en attente de validation.", en: "Thanks! Your testimonial is pending approval." },
+  "testimonials.thanks": { fr: "Merci pour votre témoignage !", en: "Thanks for your testimonial!" },
+  "testimonials.pending": { fr: "Il sera visible après validation par l'admin.", en: "It will be visible after admin approval." },
+
   // Footer
   "footer.text": { fr: "© 2026 — Conçu avec passion", en: "© 2026 — Built with passion" },
 
