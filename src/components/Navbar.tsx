@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X, Globe, Sun, Moon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
