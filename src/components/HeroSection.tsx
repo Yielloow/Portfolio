@@ -20,19 +20,19 @@ export default function HeroSection() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-10"
         style={{ background: "radial-gradient(circle, hsl(38 90% 55%), transparent 70%)" }} />
 
-      <div className="relative z-10 text-center px-6 max-w-3xl">
+      <div className="relative z-10 text-center px-6 max-w-4xl">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
           {profile.photo ? (
-            <div className="w-28 h-28 rounded-full mx-auto mb-6 border-2 border-primary/30 overflow-hidden">
+            <div className="w-36 h-36 md:w-40 md:h-40 rounded-full ml-auto mr-auto mb-[-2rem] relative left-[-3rem] border-2 border-primary/30 overflow-hidden z-0">
               <img src={profile.photo} alt={`${profile.firstName} ${profile.lastName}`} className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-28 h-28 rounded-full mx-auto mb-6 border-2 border-primary/30 bg-secondary flex items-center justify-center">
-              <User className="w-12 h-12 text-muted-foreground" />
+            <div className="w-36 h-36 md:w-40 md:h-40 rounded-full ml-auto mr-auto mb-[-2rem] relative left-[-3rem] border-2 border-primary/30 bg-secondary flex items-center justify-center z-0">
+              <User className="w-14 h-14 text-muted-foreground" />
             </div>
           )}
-          <p className="text-primary font-heading text-sm tracking-[0.3em] uppercase mb-4">{tagline}</p>
-          <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight mb-6">
+          <p className="text-primary font-heading text-sm tracking-[0.3em] uppercase mb-4 relative z-10">{tagline}</p>
+          <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight mb-6 relative z-10">
             {profile.firstName} <span className="text-gradient">{profile.lastName}</span>
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-10 font-body leading-relaxed">{desc}</p>
