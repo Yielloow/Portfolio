@@ -27,6 +27,10 @@ export default function Admin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("profile");
   const [translating, setTranslating] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Project form
   const [title, setTitle] = useState("");
