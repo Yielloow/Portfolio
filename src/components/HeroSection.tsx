@@ -23,11 +23,11 @@ export default function HeroSection() {
       <div className="relative z-10 text-center px-6 max-w-4xl">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
           {profile.photo ? (
-            <div className="w-40 h-40 md:w-48 md:h-48 rounded-full mx-auto mb-[-2.5rem] border-2 border-primary/30 overflow-hidden z-0">
+            <div className="w-44 h-44 md:w-52 md:h-52 rounded-full mx-auto mb-4 border-2 border-primary/30 overflow-hidden">
               <img src={profile.photo} alt={`${profile.firstName} ${profile.lastName}`} className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-40 h-40 md:w-48 md:h-48 rounded-full mx-auto mb-[-2.5rem] border-2 border-primary/30 bg-secondary flex items-center justify-center z-0">
+            <div className="w-44 h-44 md:w-52 md:h-52 rounded-full mx-auto mb-4 border-2 border-primary/30 bg-secondary flex items-center justify-center">
               <User className="w-16 h-16 text-muted-foreground" />
             </div>
           )}
