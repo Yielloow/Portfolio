@@ -188,8 +188,24 @@ export default function Admin() {
       images: images.length > 0 ? images : undefined,
       title_en: titleEn.trim() || undefined, description_en: descriptionEn.trim() || undefined, domain_en: domainEn.trim() || undefined,
     };
-    if (editingId) { setProjects(updateProject(editingId, data)); toast.success("Projet mis à jour !"); }
-    else { setProjects(addProject(data)); toast.success("Projet ajouté !"); }
+    let updatedProjects: Project[];
+    if (editingId) { updatedProjects = updateProject(editingId, data); toast.success("Projet mis à jour !"); }
+    else { updatedProjects = addProject(data); toast.success("Projet ajouté !"); }
+    setProjects(updatedProjects);
+    // Sync skill hours: increment new skills from this project
+    const projectHours = hours ? Number(hours) : 0;
+    const newSkillHours = { ...skillHoursMap };
+    skills.forEach((s) => {
+      if (!(s in newSkillHours)) {
+        newSkillHours[s] = 0;
+      }
+      // For new projects, add hours; for edits, the user manages manually
+      if (!editingId) {
+        newSkillHours[s] += projectHours;
+      }
+    });
+    setSkillHoursMap(newSkillHours);
+    saveSkillHours(newSkillHours);
     resetForm();
   };
 
