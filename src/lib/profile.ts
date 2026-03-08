@@ -14,6 +14,8 @@ export interface Profile {
   cv_fr: string;
   cv_en: string;
   testimonials_enabled: boolean;
+  skills_enabled: boolean;
+  partners_enabled: boolean;
 }
 
 const STORAGE_KEY = "portfolio_profile";
@@ -34,6 +36,8 @@ const defaultProfile: Profile = {
   cv_fr: "",
   cv_en: "",
   testimonials_enabled: true,
+  skills_enabled: true,
+  partners_enabled: true,
 };
 
 export function getProfile(): Profile {
