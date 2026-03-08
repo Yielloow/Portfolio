@@ -5,27 +5,23 @@ import { useI18n } from "@/lib/i18n";
 
 export default function ContactSection() {
   const profile = getProfile();
-  const { t } = useI18n();
+  const { lang, t } = useI18n();
+  const location = lang === "en" && profile.location_en ? profile.location_en : profile.location;
 
   return (
     <section id="contact" className="py-24 px-6">
       <div className="max-w-3xl mx-auto text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
           <p className="text-primary font-heading text-sm tracking-[0.2em] uppercase mb-3">{t("contact.label")}</p>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-            {t("contact.title_start")}<span className="text-gradient">{t("contact.title_highlight")}</span>
-          </h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">{t("contact.title_start")}<span className="text-gradient">{t("contact.title_highlight")}</span></h2>
           <p className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">{t("contact.desc")}</p>
         </motion.div>
-
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.5 }} className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <a href={`mailto:${profile.email}`} className="glass-card rounded-xl px-8 py-5 flex items-center gap-3 hover:glow-accent transition-shadow duration-300">
-            <Mail className="w-5 h-5 text-primary" />
-            <span className="text-foreground font-medium">{profile.email}</span>
+            <Mail className="w-5 h-5 text-primary" /><span className="text-foreground font-medium">{profile.email}</span>
           </a>
           <div className="glass-card rounded-xl px-8 py-5 flex items-center gap-3">
-            <MapPin className="w-5 h-5 text-primary" />
-            <span className="text-foreground font-medium">{profile.location}</span>
+            <MapPin className="w-5 h-5 text-primary" /><span className="text-foreground font-medium">{location}</span>
           </div>
         </motion.div>
       </div>
