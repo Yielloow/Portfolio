@@ -31,7 +31,7 @@ export default function HeroSection() {
               <User className="w-16 h-16 3xl:w-20 3xl:h-20 text-muted-foreground" />
             </div>
           )}
-          <h1 className="font-heading text-5xl md:text-7xl 3xl:text-8xl 4k:text-9xl font-bold leading-tight mb-3 relative z-10">
+          <h1 className="font-heading text-4xl md:text-7xl 3xl:text-8xl 4k:text-9xl font-bold leading-tight mb-3 relative z-10 md:whitespace-nowrap">
             {profile.firstName} <span className="text-gradient">{profile.lastName}</span>
           </h1>
           <p className="text-primary font-heading text-sm 3xl:text-base 4k:text-lg tracking-[0.3em] uppercase mb-4 relative z-10">{tagline}</p>
