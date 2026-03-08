@@ -46,21 +46,27 @@ export default function ProjectsSection() {
                   : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
               }`}
             >
-              {t("projects.all")}
+              {t("projects.all")} <span className="ml-1 opacity-70">({projects.length})</span>
             </button>
-            {domains.map((domain) => (
-              <button
-                key={domain}
-                onClick={() => setActiveDomain(domain)}
-                className={`text-sm font-heading font-medium px-4 py-2 rounded-lg border transition-colors ${
-                  activeDomain === domain
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
-                }`}
-              >
-                {domain}
-              </button>
-            ))}
+            {domains.map((domain) => {
+              const count = projects.filter((p) => {
+                const d = lang === "en" && p.domain_en ? p.domain_en : p.domain;
+                return d === domain;
+              }).length;
+              return (
+                <button
+                  key={domain}
+                  onClick={() => setActiveDomain(domain)}
+                  className={`text-sm font-heading font-medium px-4 py-2 rounded-lg border transition-colors ${
+                    activeDomain === domain
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {domain} <span className="ml-1 opacity-70">({count})</span>
+                </button>
+              );
+            })}
           </div>
         )}
 
