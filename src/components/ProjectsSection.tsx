@@ -116,7 +116,8 @@ export default function ProjectsSection() {
                 </motion.div>
               );
             })}
-          </div>
+          </AnimatePresence>
+        </div>)
         )}
       </div>
     </section>
