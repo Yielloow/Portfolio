@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload, MessageSquare, Check } from "lucide-react";
 import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
