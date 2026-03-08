@@ -10,7 +10,7 @@ import { translateTexts } from "@/lib/translate";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 
-type Tab = "profile" | "projects" | "timeline";
+type Tab = "profile" | "projects" | "timeline" | "testimonials";
 
 export default function Admin() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
