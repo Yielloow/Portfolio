@@ -7,22 +7,29 @@ import { toast } from "sonner";
 
 export default function TestimonialsSection() {
   const { t } = useI18n();
-  const [testimonials, setTestimonials] = useState(getApprovedTestimonials());
+  const [testimonials] = useState(getApprovedTestimonials());
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) {
       toast.error(t("testimonials.error"));
       return;
     }
-    addTestimonial(name, message);
-    setName("");
-    setMessage("");
-    setSubmitted(true);
-    toast.success(t("testimonials.success"));
+    setSending(true);
+    try {
+      await addTestimonial(name, message);
+      setName("");
+      setMessage("");
+      setSubmitted(true);
+      toast.success(t("testimonials.success"));
+    } catch {
+      toast.error("Erreur lors de l'envoi");
+    }
+    setSending(false);
   };
 
   return (
@@ -38,7 +45,6 @@ export default function TestimonialsSection() {
           </h2>
         </div>
 
-        {/* Approved testimonials */}
         {testimonials.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-5 3xl:gap-6 mb-16">
             <AnimatePresence>
@@ -61,7 +67,6 @@ export default function TestimonialsSection() {
           </div>
         )}
 
-        {/* Submission form */}
         {!submitted ? (
           <motion.form
             onSubmit={handleSubmit}
@@ -92,7 +97,8 @@ export default function TestimonialsSection() {
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity text-sm"
+              disabled={sending}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity text-sm disabled:opacity-50"
             >
               <Send className="w-4 h-4" /> {t("testimonials.submit")}
             </button>
