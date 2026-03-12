@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface Testimonial {
   id: string;
   name: string;
@@ -6,41 +8,60 @@ export interface Testimonial {
   createdAt: string;
 }
 
-const STORAGE_KEY = "portfolio_testimonials";
+let cachedTestimonials: Testimonial[] = [];
 
-function load(): Testimonial[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch { return []; }
-}
-
-function save(items: Testimonial[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+function rowToTestimonial(row: any): Testimonial {
+  return {
+    id: row.id,
+    name: row.name,
+    message: row.message,
+    approved: row.approved ?? false,
+    createdAt: row.created_at || new Date().toISOString(),
+  };
 }
 
 export function getTestimonials(): Testimonial[] {
-  return load();
+  return cachedTestimonials;
 }
 
 export function getApprovedTestimonials(): Testimonial[] {
-  return load().filter((t) => t.approved);
+  return cachedTestimonials.filter((t) => t.approved);
 }
 
-export function addTestimonial(name: string, message: string): Testimonial[] {
-  const items = load();
-  items.push({ id: crypto.randomUUID(), name: name.trim(), message: message.trim(), approved: false, createdAt: new Date().toISOString() });
-  save(items);
-  return items;
+export async function fetchTestimonials(): Promise<Testimonial[]> {
+  const { data, error } = await supabase
+    .from("testimonials")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    cachedTestimonials = [];
+    return [];
+  }
+  cachedTestimonials = data.map(rowToTestimonial);
+  return cachedTestimonials;
 }
 
-export function approveTestimonial(id: string): Testimonial[] {
-  const items = load().map((t) => t.id === id ? { ...t, approved: true } : t);
-  save(items);
-  return items;
+export async function fetchApprovedTestimonials(): Promise<Testimonial[]> {
+  await fetchTestimonials();
+  return getApprovedTestimonials();
 }
 
-export function removeTestimonial(id: string): Testimonial[] {
-  const items = load().filter((t) => t.id !== id);
-  save(items);
-  return items;
+export async function addTestimonial(name: string, message: string): Promise<Testimonial[]> {
+  await supabase.from("testimonials").insert({
+    name: name.trim(),
+    message: message.trim(),
+    approved: false,
+  });
+  return fetchTestimonials();
+}
+
+export async function approveTestimonial(id: string): Promise<Testimonial[]> {
+  await supabase.from("testimonials").update({ approved: true }).eq("id", id);
+  return fetchTestimonials();
+}
+
+export async function removeTestimonial(id: string): Promise<Testimonial[]> {
+  await supabase.from("testimonials").delete().eq("id", id);
+  return fetchTestimonials();
 }

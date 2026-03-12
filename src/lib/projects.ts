@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface Project {
   id: string;
   title: string;
@@ -7,74 +9,94 @@ export interface Project {
   link?: string;
   hours?: number;
   images?: string[];
-  // English translations
   title_en?: string;
   description_en?: string;
   domain_en?: string;
 }
 
-const STORAGE_KEY = "portfolio_projects";
+let cachedProjects: Project[] = [];
 
-const defaultProjects: Project[] = [
-  {
-    id: "1",
-    title: "Application de Gestion de Tâches",
-    description: "Une application web complète permettant la gestion de tâches avec authentification, tableaux Kanban et notifications en temps réel.",
-    domain: "Développement Web",
-    skills: ["React", "TypeScript", "Node.js", "PostgreSQL"],
-    link: "https://github.com/example/task-app",
-    hours: 120,
-  },
-  {
-    id: "2",
-    title: "Analyse de Données Climatiques",
-    description: "Projet de data science utilisant le machine learning pour prédire les tendances climatiques à partir de données historiques.",
-    domain: "Data Science",
-    skills: ["Python", "TensorFlow", "Pandas", "Matplotlib"],
-    hours: 80,
-  },
-  {
-    id: "3",
-    title: "Application Mobile E-Commerce",
-    description: "Application mobile cross-platform avec panier d'achat, système de paiement intégré et gestion des commandes.",
-    domain: "Mobile",
-    skills: ["React Native", "Firebase", "Stripe API"],
-    link: "https://github.com/example/ecommerce",
-    hours: 200,
-  },
-];
+function rowToProject(row: any): Project {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description || "",
+    domain: row.domain || "",
+    skills: row.skills || [],
+    link: row.link || undefined,
+    hours: row.hours || undefined,
+    images: row.images?.length ? row.images : undefined,
+    title_en: row.title_en || undefined,
+    description_en: row.description_en || undefined,
+    domain_en: row.domain_en || undefined,
+  };
+}
 
 export function getProjects(): Project[] {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProjects));
-  return defaultProjects;
+  return cachedProjects;
 }
 
 export function getProjectById(id: string): Project | undefined {
-  return getProjects().find((p) => p.id === id);
+  return cachedProjects.find((p) => p.id === id);
 }
 
-export function saveProjects(projects: Project[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+export async function fetchProjects(): Promise<Project[]> {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error || !data) {
+    cachedProjects = [];
+    return [];
+  }
+  cachedProjects = data.map(rowToProject);
+  return cachedProjects;
 }
 
-export function addProject(project: Omit<Project, "id">): Project[] {
-  const projects = getProjects();
-  const newProject = { ...project, id: crypto.randomUUID() };
-  const updated = [...projects, newProject];
-  saveProjects(updated);
-  return updated;
+export async function addProject(project: Omit<Project, "id">): Promise<Project[]> {
+  const maxOrder = cachedProjects.length;
+  await supabase.from("projects").insert({
+    title: project.title,
+    description: project.description,
+    domain: project.domain,
+    skills: project.skills,
+    link: project.link || "",
+    hours: project.hours || 0,
+    images: project.images || [],
+    title_en: project.title_en || "",
+    description_en: project.description_en || "",
+    domain_en: project.domain_en || "",
+    sort_order: maxOrder,
+  });
+  return fetchProjects();
 }
 
-export function removeProject(id: string): Project[] {
-  const projects = getProjects().filter((p) => p.id !== id);
-  saveProjects(projects);
-  return projects;
+export async function removeProject(id: string): Promise<Project[]> {
+  await supabase.from("projects").delete().eq("id", id);
+  return fetchProjects();
 }
 
-export function updateProject(id: string, data: Omit<Project, "id">): Project[] {
-  const projects = getProjects().map((p) => (p.id === id ? { ...p, ...data } : p));
-  saveProjects(projects);
-  return projects;
+export async function updateProject(id: string, data: Omit<Project, "id">): Promise<Project[]> {
+  await supabase.from("projects").update({
+    title: data.title,
+    description: data.description,
+    domain: data.domain,
+    skills: data.skills,
+    link: data.link || "",
+    hours: data.hours || 0,
+    images: data.images || [],
+    title_en: data.title_en || "",
+    description_en: data.description_en || "",
+    domain_en: data.domain_en || "",
+  }).eq("id", id);
+  return fetchProjects();
+}
+
+export async function saveProjects(projects: Project[]): Promise<void> {
+  // Update sort orders
+  for (let i = 0; i < projects.length; i++) {
+    await supabase.from("projects").update({ sort_order: i }).eq("id", projects[i].id);
+  }
+  cachedProjects = projects;
 }

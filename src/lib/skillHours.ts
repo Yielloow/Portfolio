@@ -1,16 +1,43 @@
-const STORAGE_KEY = "portfolio_skill_hours";
+import { supabase } from "@/integrations/supabase/client";
+
+let cachedSkillHours: Record<string, number> = {};
 
 export function getSkillHours(): Record<string, number> {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-  return {};
+  return cachedSkillHours;
 }
 
-export function saveSkillHours(hours: Record<string, number>): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(hours));
+export async function fetchSkillHours(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("skill_hours")
+    .select("*");
+
+  if (error || !data) {
+    cachedSkillHours = {};
+    return {};
+  }
+  cachedSkillHours = {};
+  data.forEach((row: any) => {
+    cachedSkillHours[row.skill] = row.hours || 0;
+  });
+  return cachedSkillHours;
 }
 
-/** Recalculate skill hours from projects, merging with any manual overrides */
+export async function saveSkillHours(hours: Record<string, number>): Promise<void> {
+  // Upsert all skill hours
+  const rows = Object.entries(hours).map(([skill, h]) => ({
+    skill,
+    hours: h,
+  }));
+
+  // Delete all existing and re-insert
+  await supabase.from("skill_hours").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+  if (rows.length > 0) {
+    await supabase.from("skill_hours").insert(rows);
+  }
+  cachedSkillHours = hours;
+}
+
 export function computeSkillHoursFromProjects(
   projects: { skills: string[]; hours?: number }[]
 ): Record<string, number> {
@@ -20,14 +47,11 @@ export function computeSkillHoursFromProjects(
       computed[skill] = (computed[skill] || 0) + (p.hours || 0);
     });
   });
-  // Merge: keep manual overrides, add new skills from projects
   const stored = getSkillHours();
   const merged: Record<string, number> = {};
-  // All skills from projects get computed value unless manually overridden
   for (const skill of Object.keys(computed)) {
     merged[skill] = stored[skill] !== undefined ? stored[skill] : computed[skill];
   }
-  // Keep manually added skills not in projects
   for (const skill of Object.keys(stored)) {
     if (!(skill in merged)) {
       merged[skill] = stored[skill];
