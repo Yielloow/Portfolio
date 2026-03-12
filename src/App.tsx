@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { DataProvider } from "@/lib/DataProvider";
 import Index from "./pages/Index";
 
 const Admin = lazy(() => import("./pages/Admin"));
@@ -24,20 +25,22 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ThemeProvider>
-        <I18nProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<Fallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/project/:id" element={<ProjectDetail />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </I18nProvider>
+        <DataProvider>
+          <I18nProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<Fallback />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/project/:id" element={<ProjectDetail />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </I18nProvider>
+        </DataProvider>
       </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>

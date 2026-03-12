@@ -1,20 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Edit2, Save, X, ExternalLink, User, FolderOpen, Clock, Image, LogOut, ChevronUp, ChevronDown, Route, Languages, Loader2, FileText, Upload, MessageSquare, Check, KeyRound, Handshake } from "lucide-react";
-import { getProjects, addProject, removeProject, updateProject, type Project } from "@/lib/projects";
-import { getPartners, addPartner, removePartner, updatePartner, type Partner } from "@/lib/partners";
-import { getProfile, saveProfile, type Profile } from "@/lib/profile";
-import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, type TimelineItem } from "@/lib/timeline";
-import { getTestimonials, approveTestimonial, removeTestimonial, type Testimonial } from "@/lib/testimonials";
+import { getProjects, addProject, removeProject, updateProject, fetchProjects, type Project } from "@/lib/projects";
+import { getPartners, addPartner, removePartner, updatePartner, fetchPartners, type Partner } from "@/lib/partners";
+import { getProfile, saveProfile, fetchProfile, type Profile } from "@/lib/profile";
+import { getTimeline, addTimelineItem, removeTimelineItem, updateTimelineItem, reorderTimeline, fetchTimeline, type TimelineItem } from "@/lib/timeline";
+import { getTestimonials, approveTestimonial, removeTestimonial, fetchTestimonials, type Testimonial } from "@/lib/testimonials";
 import { translateTexts } from "@/lib/translate";
-import { getSkillHours, saveSkillHours, computeSkillHoursFromProjects } from "@/lib/skillHours";
+import { getSkillHours, saveSkillHours, computeSkillHoursFromProjects, fetchSkillHours } from "@/lib/skillHours";
+import { uploadDataUrl } from "@/lib/storage";
 import { toast } from "sonner";
 import AdminLogin from "@/components/AdminLogin";
 import { supabase } from "@/integrations/supabase/client";
+import { useData } from "@/lib/DataProvider";
 
 type Tab = "profile" | "projects" | "timeline" | "testimonials" | "partners";
 
 export default function Admin() {
+  const { refresh } = useData();
   const [authed, setAuthed] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
@@ -24,6 +27,7 @@ export default function Admin() {
       setCheckingAuth(false);
     });
   }, []);
+
   const [projects, setProjects] = useState<Project[]>(getProjects());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -33,6 +37,7 @@ export default function Admin() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Project form
   const [title, setTitle] = useState("");
@@ -86,6 +91,23 @@ export default function Admin() {
   const [tlOrgEn, setTlOrgEn] = useState("");
   const [tlDescEn, setTlDescEn] = useState("");
 
+  // Reload data when authed
+  useEffect(() => {
+    if (authed) {
+      refresh().then(() => {
+        setProjects(getProjects());
+        setProfile(getProfile());
+        setTimelineItems(getTimeline());
+        setTestimonialItems(getTestimonials());
+        setPartnerItems(getPartners());
+        const p = getProjects();
+        const computed = computeSkillHoursFromProjects(p);
+        const stored = getSkillHours();
+        setSkillHoursMap({ ...computed, ...stored });
+      });
+    }
+  }, [authed, refresh]);
+
   if (checkingAuth) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
 
@@ -113,7 +135,30 @@ export default function Admin() {
   );
 
   // ─── Profile ───
-  const handleProfileSave = () => { saveProfile(profile); toast.success("Profil mis à jour !"); };
+  const handleProfileSave = async () => {
+    setSaving(true);
+    try {
+      // Upload photo if it's base64
+      let photo = profile.photo;
+      if (photo && photo.startsWith("data:")) {
+        photo = await uploadDataUrl(`profile/photo_${Date.now()}`, photo);
+      }
+      let cv_fr = profile.cv_fr;
+      if (cv_fr && cv_fr.startsWith("data:")) {
+        cv_fr = await uploadDataUrl(`profile/cv_fr_${Date.now()}.pdf`, cv_fr);
+      }
+      let cv_en = profile.cv_en;
+      if (cv_en && cv_en.startsWith("data:")) {
+        cv_en = await uploadDataUrl(`profile/cv_en_${Date.now()}.pdf`, cv_en);
+      }
+      await saveProfile({ ...profile, photo, cv_fr, cv_en });
+      setProfile({ ...profile, photo, cv_fr, cv_en });
+      toast.success("Profil mis à jour !");
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la sauvegarde");
+    }
+    setSaving(false);
+  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -176,37 +221,50 @@ export default function Admin() {
     setTranslating(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !domain.trim() || !skillsStr.trim()) {
       toast.error("Veuillez remplir tous les champs obligatoires"); return;
     }
-    const skills = skillsStr.split(",").map((s) => s.trim()).filter(Boolean);
-    const data: Omit<Project, "id"> = {
-      title: title.trim(), description: description.trim(), domain: domain.trim(), skills,
-      link: link.trim() || undefined, hours: hours ? Number(hours) : undefined,
-      images: images.length > 0 ? images : undefined,
-      title_en: titleEn.trim() || undefined, description_en: descriptionEn.trim() || undefined, domain_en: domainEn.trim() || undefined,
-    };
-    let updatedProjects: Project[];
-    if (editingId) { updatedProjects = updateProject(editingId, data); toast.success("Projet mis à jour !"); }
-    else { updatedProjects = addProject(data); toast.success("Projet ajouté !"); }
-    setProjects(updatedProjects);
-    // Sync skill hours: increment new skills from this project
-    const projectHours = hours ? Number(hours) : 0;
-    const newSkillHours = { ...skillHoursMap };
-    skills.forEach((s) => {
-      if (!(s in newSkillHours)) {
-        newSkillHours[s] = 0;
+    setSaving(true);
+    try {
+      const skills = skillsStr.split(",").map((s) => s.trim()).filter(Boolean);
+      
+      // Upload images
+      const uploadedImages: string[] = [];
+      for (const img of images) {
+        if (img.startsWith("data:")) {
+          const url = await uploadDataUrl(`projects/img_${Date.now()}_${Math.random().toString(36).slice(2)}`, img);
+          uploadedImages.push(url);
+        } else {
+          uploadedImages.push(img);
+        }
       }
-      // For new projects, add hours; for edits, the user manages manually
-      if (!editingId) {
-        newSkillHours[s] += projectHours;
-      }
-    });
-    setSkillHoursMap(newSkillHours);
-    saveSkillHours(newSkillHours);
-    resetForm();
+
+      const data: Omit<Project, "id"> = {
+        title: title.trim(), description: description.trim(), domain: domain.trim(), skills,
+        link: link.trim() || undefined, hours: hours ? Number(hours) : undefined,
+        images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        title_en: titleEn.trim() || undefined, description_en: descriptionEn.trim() || undefined, domain_en: domainEn.trim() || undefined,
+      };
+      let updatedProjects: Project[];
+      if (editingId) { updatedProjects = await updateProject(editingId, data); toast.success("Projet mis à jour !"); }
+      else { updatedProjects = await addProject(data); toast.success("Projet ajouté !"); }
+      setProjects(updatedProjects);
+
+      const projectHours = hours ? Number(hours) : 0;
+      const newSkillHours = { ...skillHoursMap };
+      skills.forEach((s) => {
+        if (!(s in newSkillHours)) newSkillHours[s] = 0;
+        if (!editingId) newSkillHours[s] += projectHours;
+      });
+      setSkillHoursMap(newSkillHours);
+      await saveSkillHours(newSkillHours);
+      resetForm();
+    } catch (e: any) {
+      toast.error(e.message || "Erreur");
+    }
+    setSaving(false);
   };
 
   const startEdit = (p: Project) => {
@@ -217,7 +275,11 @@ export default function Admin() {
     setEditingId(p.id); setShowForm(true);
   };
 
-  const handleDelete = (id: string) => { setProjects(removeProject(id)); toast.success("Projet supprimé"); };
+  const handleDelete = async (id: string) => {
+    const updated = await removeProject(id);
+    setProjects(updated);
+    toast.success("Projet supprimé");
+  };
 
   // ─── Timeline ───
   const resetTimelineForm = () => {
@@ -236,19 +298,23 @@ export default function Admin() {
     setTranslating(false);
   };
 
-  const handleTimelineSubmit = (e: React.FormEvent) => {
+  const handleTimelineSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tlTitle.trim() || !tlOrg.trim() || !tlStart.trim() || !tlEnd.trim()) {
       toast.error("Veuillez remplir tous les champs obligatoires"); return;
     }
-    const data: Omit<TimelineItem, "id"> = {
-      title: tlTitle.trim(), organization: tlOrg.trim(), description: tlDesc.trim(),
-      startDate: tlStart.trim(), endDate: tlEnd.trim(), type: tlType,
-      title_en: tlTitleEn.trim() || undefined, organization_en: tlOrgEn.trim() || undefined, description_en: tlDescEn.trim() || undefined,
-    };
-    if (editingTimelineId) { setTimelineItems(updateTimelineItem(editingTimelineId, data)); toast.success("Élément mis à jour !"); }
-    else { setTimelineItems(addTimelineItem(data)); toast.success("Élément ajouté !"); }
-    resetTimelineForm();
+    setSaving(true);
+    try {
+      const data: Omit<TimelineItem, "id"> = {
+        title: tlTitle.trim(), organization: tlOrg.trim(), description: tlDesc.trim(),
+        startDate: tlStart.trim(), endDate: tlEnd.trim(), type: tlType,
+        title_en: tlTitleEn.trim() || undefined, organization_en: tlOrgEn.trim() || undefined, description_en: tlDescEn.trim() || undefined,
+      };
+      if (editingTimelineId) { setTimelineItems(await updateTimelineItem(editingTimelineId, data)); toast.success("Élément mis à jour !"); }
+      else { setTimelineItems(await addTimelineItem(data)); toast.success("Élément ajouté !"); }
+      resetTimelineForm();
+    } catch (e: any) { toast.error(e.message || "Erreur"); }
+    setSaving(false);
   };
 
   const startTimelineEdit = (item: TimelineItem) => {
@@ -258,15 +324,33 @@ export default function Admin() {
     setEditingTimelineId(item.id); setShowTimelineForm(true);
   };
 
-  const handleTimelineDelete = (id: string) => { setTimelineItems(removeTimelineItem(id)); toast.success("Élément supprimé"); };
+  const handleTimelineDelete = async (id: string) => {
+    setTimelineItems(await removeTimelineItem(id));
+    toast.success("Élément supprimé");
+  };
 
-  const moveItem = (index: number, direction: "up" | "down") => {
+  const moveItem = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= timelineItems.length) return;
-    setTimelineItems(reorderTimeline(index, newIndex));
+    setTimelineItems(await reorderTimeline(index, newIndex));
   };
 
   const typeLabels: Record<TimelineItem["type"], string> = { education: "🎓 Formation", work: "💼 Expérience", project: "🚀 Projet", other: "⭐ Autre" };
+
+  // ─── Section visibility toggle ───
+  const handleToggleSection = async (key: "skills_enabled" | "partners_enabled" | "testimonials_enabled", label: string) => {
+    const updated = { ...profile, [key]: !profile[key] };
+    setProfile(updated);
+    await saveProfile(updated);
+    toast.success(`Section "${label}" ${updated[key] ? "activée" : "désactivée"}`);
+  };
+
+  // ─── Skill hours save ───
+  const handleSkillHourChange = async (skill: string, val: number) => {
+    const updated = { ...skillHoursMap, [skill]: val };
+    setSkillHoursMap(updated);
+    await saveSkillHours(updated);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -316,17 +400,14 @@ export default function Admin() {
               <div><label className="text-sm text-muted-foreground mb-1 block">Nom</label><input value={profile.lastName} onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))} className={inputCls} /></div>
             </div>
 
-            {/* Tagline FR / EN */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Accroche</label><input value={profile.tagline} onChange={(e) => setProfile((p) => ({ ...p, tagline: e.target.value }))} className={inputCls} /></div>
               <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Tagline (EN)</label><input value={profile.tagline_en} onChange={(e) => setProfile((p) => ({ ...p, tagline_en: e.target.value }))} className={inputEnCls} placeholder="Auto or manual" /></div>
             </div>
 
-            {/* Description FR / EN */}
             <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Présentation</label><textarea value={profile.description} onChange={(e) => setProfile((p) => ({ ...p, description: e.target.value }))} rows={3} className={`${inputCls} resize-none`} /></div>
             <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Description (EN)</label><textarea value={profile.description_en} onChange={(e) => setProfile((p) => ({ ...p, description_en: e.target.value }))} rows={3} className={`${inputEnCls} resize-none`} placeholder="Auto or manual" /></div>
 
-            {/* Location FR / EN */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Localisation</label><input value={profile.location} onChange={(e) => setProfile((p) => ({ ...p, location: e.target.value }))} className={inputCls} /></div>
               <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Location (EN)</label><input value={profile.location_en} onChange={(e) => setProfile((p) => ({ ...p, location_en: e.target.value }))} className={inputEnCls} placeholder="Auto or manual" /></div>
@@ -376,12 +457,7 @@ export default function Admin() {
               ]).map(({ key, label }) => (
                 <button
                   key={key}
-                  onClick={() => {
-                    const updated = { ...profile, [key]: !profile[key] };
-                    setProfile(updated);
-                    saveProfile(updated);
-                    toast.success(`Section "${label}" ${updated[key] ? "activée" : "désactivée"}`);
-                  }}
+                  onClick={() => handleToggleSection(key, label)}
                   className={`flex items-center gap-2 text-sm px-4 py-2 rounded-lg border font-heading font-medium transition-colors ${profile[key] ? "border-green-500/50 text-green-400 bg-green-500/10 hover:bg-green-500/20" : "border-destructive/50 text-destructive bg-destructive/10 hover:bg-destructive/20"}`}
                 >
                   {profile[key] ? `✓ ${label}` : `✗ ${label}`}
@@ -401,12 +477,7 @@ export default function Admin() {
                       type="number"
                       min="0"
                       value={hrs}
-                      onChange={(e) => {
-                        const val = Math.max(0, Number(e.target.value) || 0);
-                        const updated = { ...skillHoursMap, [skill]: val };
-                        setSkillHoursMap(updated);
-                        saveSkillHours(updated);
-                      }}
+                      onChange={(e) => handleSkillHourChange(skill, Math.max(0, Number(e.target.value) || 0))}
                       className="w-20 bg-secondary text-foreground rounded-lg px-3 py-1.5 text-sm border border-border focus:border-primary focus:outline-none transition-colors text-right"
                     />
                     <span className="text-xs text-muted-foreground">h</span>
@@ -414,7 +485,9 @@ export default function Admin() {
                 ))}
             </div>
 
-            <button onClick={handleProfileSave} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> Enregistrer le profil</button>
+            <button onClick={handleProfileSave} disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Enregistrer le profil
+            </button>
           </div>
         )}
 
@@ -432,19 +505,16 @@ export default function Admin() {
                   <button type="button" onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
                 </div>
 
-                {/* Title FR/EN */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Titre *</label><input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="Mon projet" /></div>
                   <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Title (EN)</label><input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} className={inputEnCls} placeholder="Auto or manual" /></div>
                 </div>
 
-                {/* Domain FR/EN */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Domaine *</label><input value={domain} onChange={(e) => setDomain(e.target.value)} className={inputCls} placeholder="Web, Mobile..." /></div>
                   <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Domain (EN)</label><input value={domainEn} onChange={(e) => setDomainEn(e.target.value)} className={inputEnCls} placeholder="Auto or manual" /></div>
                 </div>
 
-                {/* Description FR/EN */}
                 <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Description *</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={`${inputCls} resize-none`} placeholder="Décrivez votre projet..." /></div>
                 <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Description (EN)</label><textarea value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} rows={3} className={`${inputEnCls} resize-none`} placeholder="Auto or manual" /></div>
 
@@ -471,7 +541,9 @@ export default function Admin() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> {editingId ? "Mettre à jour" : "Ajouter"}</button>
+                  <button type="submit" disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {editingId ? "Mettre à jour" : "Ajouter"}
+                  </button>
                   <button type="button" onClick={resetForm} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">Annuler</button>
                 </div>
               </form>
@@ -518,19 +590,16 @@ export default function Admin() {
                   <button type="button" onClick={resetTimelineForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
                 </div>
 
-                {/* Title FR/EN */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Titre *</label><input value={tlTitle} onChange={(e) => setTlTitle(e.target.value)} className={inputCls} placeholder="Bachelier en Informatique" /></div>
                   <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Title (EN)</label><input value={tlTitleEn} onChange={(e) => setTlTitleEn(e.target.value)} className={inputEnCls} placeholder="Auto or manual" /></div>
                 </div>
 
-                {/* Org FR/EN */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Organisation *</label><input value={tlOrg} onChange={(e) => setTlOrg(e.target.value)} className={inputCls} /></div>
                   <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Organization (EN)</label><input value={tlOrgEn} onChange={(e) => setTlOrgEn(e.target.value)} className={inputEnCls} placeholder="Auto or manual" /></div>
                 </div>
 
-                {/* Desc FR/EN */}
                 <div><label className="text-sm text-muted-foreground mb-1 block">🇫🇷 Description</label><textarea value={tlDesc} onChange={(e) => setTlDesc(e.target.value)} rows={3} className={`${inputCls} resize-none`} /></div>
                 <div><label className="text-sm text-blue-400 mb-1 block">🇬🇧 Description (EN)</label><textarea value={tlDescEn} onChange={(e) => setTlDescEn(e.target.value)} rows={3} className={`${inputEnCls} resize-none`} placeholder="Auto or manual" /></div>
 
@@ -547,7 +616,9 @@ export default function Admin() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> {editingTimelineId ? "Mettre à jour" : "Ajouter"}</button>
+                  <button type="submit" disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {editingTimelineId ? "Mettre à jour" : "Ajouter"}
+                  </button>
                   <button type="button" onClick={resetTimelineForm} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">Annuler</button>
                 </div>
               </form>
@@ -596,7 +667,6 @@ export default function Admin() {
               <p className="text-muted-foreground text-center py-12">Aucun témoignage reçu.</p>
             )}
 
-            {/* Pending first, then approved */}
             {[...testimonialItems].sort((a, b) => (a.approved === b.approved ? 0 : a.approved ? 1 : -1)).map((t) => (
               <div key={t.id} className={`glass-card rounded-xl p-5 flex items-start gap-4 ${!t.approved ? "border-primary/30" : ""}`}>
                 <div className="flex-1 min-w-0">
@@ -612,7 +682,7 @@ export default function Admin() {
                 <div className="flex gap-2 shrink-0">
                   {!t.approved && (
                     <button
-                      onClick={() => { setTestimonialItems(approveTestimonial(t.id)); toast.success("Témoignage publié !"); }}
+                      onClick={async () => { setTestimonialItems(await approveTestimonial(t.id)); toast.success("Témoignage publié !"); }}
                       className="p-2 rounded-lg border border-border hover:border-green-500/50 text-muted-foreground hover:text-green-400 transition-colors"
                       title="Approuver"
                     >
@@ -620,7 +690,7 @@ export default function Admin() {
                     </button>
                   )}
                   <button
-                    onClick={() => { setTestimonialItems(removeTestimonial(t.id)); toast.success("Témoignage supprimé"); }}
+                    onClick={async () => { setTestimonialItems(await removeTestimonial(t.id)); toast.success("Témoignage supprimé"); }}
                     className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"
                     title="Supprimer"
                   >
@@ -641,13 +711,21 @@ export default function Admin() {
 
             {showPartnerForm && (
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   if (!partnerName.trim()) { toast.error("Le nom est obligatoire"); return; }
-                  const data: Omit<Partner, "id"> = { name: partnerName.trim(), logo: partnerLogo, url: partnerUrl.trim() || undefined };
-                  if (editingPartnerId) { setPartnerItems(updatePartner(editingPartnerId, data)); toast.success("Partenaire mis à jour !"); }
-                  else { setPartnerItems(addPartner(data)); toast.success("Partenaire ajouté !"); }
-                  setShowPartnerForm(false); setEditingPartnerId(null);
+                  setSaving(true);
+                  try {
+                    let logo = partnerLogo;
+                    if (logo && logo.startsWith("data:")) {
+                      logo = await uploadDataUrl(`partners/logo_${Date.now()}`, logo);
+                    }
+                    const data: Omit<Partner, "id"> = { name: partnerName.trim(), logo, url: partnerUrl.trim() || undefined };
+                    if (editingPartnerId) { setPartnerItems(await updatePartner(editingPartnerId, data)); toast.success("Partenaire mis à jour !"); }
+                    else { setPartnerItems(await addPartner(data)); toast.success("Partenaire ajouté !"); }
+                    setShowPartnerForm(false); setEditingPartnerId(null);
+                  } catch (e: any) { toast.error(e.message || "Erreur"); }
+                  setSaving(false);
                 }}
                 className="glass-card rounded-xl p-6 mb-8 space-y-4"
               >
@@ -679,7 +757,9 @@ export default function Admin() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="submit" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity"><Save className="w-4 h-4" /> {editingPartnerId ? "Mettre à jour" : "Ajouter"}</button>
+                  <button type="submit" disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-heading font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {editingPartnerId ? "Mettre à jour" : "Ajouter"}
+                  </button>
                   <button type="button" onClick={() => { setShowPartnerForm(false); setEditingPartnerId(null); }} className="px-5 py-2.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-sm">Annuler</button>
                 </div>
               </form>
@@ -696,7 +776,7 @@ export default function Admin() {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => { setPartnerName(p.name); setPartnerLogo(p.logo); setPartnerUrl(p.url || ""); setEditingPartnerId(p.id); setShowPartnerForm(true); }} className="p-2 rounded-lg border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-colors"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => { setPartnerItems(removePartner(p.id)); toast.success("Partenaire supprimé"); }} className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={async () => { setPartnerItems(await removePartner(p.id)); toast.success("Partenaire supprimé"); }} className="p-2 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               ))}

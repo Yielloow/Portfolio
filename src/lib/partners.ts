@@ -1,37 +1,62 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface Partner {
   id: string;
   name: string;
-  logo: string; // base64 data URL or URL
+  logo: string;
   url?: string;
 }
 
-const STORAGE_KEY = "portfolio_partners";
+let cachedPartners: Partner[] = [];
+
+function rowToPartner(row: any): Partner {
+  return {
+    id: row.id,
+    name: row.name,
+    logo: row.logo || "",
+    url: row.url || undefined,
+  };
+}
 
 export function getPartners(): Partner[] {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-  return [];
+  return cachedPartners;
 }
 
-export function savePartners(partners: Partner[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(partners));
+export async function fetchPartners(): Promise<Partner[]> {
+  const { data, error } = await supabase
+    .from("partners")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error || !data) {
+    cachedPartners = [];
+    return [];
+  }
+  cachedPartners = data.map(rowToPartner);
+  return cachedPartners;
 }
 
-export function addPartner(partner: Omit<Partner, "id">): Partner[] {
-  const partners = getPartners();
-  const updated = [...partners, { ...partner, id: crypto.randomUUID() }];
-  savePartners(updated);
-  return updated;
+export async function addPartner(partner: Omit<Partner, "id">): Promise<Partner[]> {
+  const maxOrder = cachedPartners.length;
+  await supabase.from("partners").insert({
+    name: partner.name,
+    logo: partner.logo,
+    url: partner.url || "",
+    sort_order: maxOrder,
+  });
+  return fetchPartners();
 }
 
-export function removePartner(id: string): Partner[] {
-  const partners = getPartners().filter((p) => p.id !== id);
-  savePartners(partners);
-  return partners;
+export async function removePartner(id: string): Promise<Partner[]> {
+  await supabase.from("partners").delete().eq("id", id);
+  return fetchPartners();
 }
 
-export function updatePartner(id: string, data: Omit<Partner, "id">): Partner[] {
-  const partners = getPartners().map((p) => (p.id === id ? { ...p, ...data } : p));
-  savePartners(partners);
-  return partners;
+export async function updatePartner(id: string, data: Omit<Partner, "id">): Promise<Partner[]> {
+  await supabase.from("partners").update({
+    name: data.name,
+    logo: data.logo,
+    url: data.url || "",
+  }).eq("id", id);
+  return fetchPartners();
 }

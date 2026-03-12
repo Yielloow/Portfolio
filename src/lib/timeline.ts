@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface TimelineItem {
   id: string;
   title: string;
@@ -6,80 +8,92 @@ export interface TimelineItem {
   startDate: string;
   endDate: string;
   type: "education" | "work" | "project" | "other";
-  // English translations
   title_en?: string;
   organization_en?: string;
   description_en?: string;
 }
 
-const STORAGE_KEY = "portfolio_timeline";
+let cachedTimeline: TimelineItem[] = [];
 
-const defaultTimeline: TimelineItem[] = [
-  {
-    id: "1",
-    title: "Bachelier en Informatique",
-    organization: "Université de Bruxelles",
-    description: "Formation complète en informatique couvrant la programmation, les bases de données, les réseaux et l'intelligence artificielle.",
-    startDate: "2022-09",
-    endDate: "present",
-    type: "education",
-  },
-  {
-    id: "2",
-    title: "Stage Développeur Web",
-    organization: "TechStartup SA",
-    description: "Développement d'applications web avec React et Node.js dans un environnement agile.",
-    startDate: "2024-06",
-    endDate: "2024-08",
-    type: "work",
-  },
-  {
-    id: "3",
-    title: "Projet Hackathon – 1ère place",
-    organization: "BeCode Hackathon",
-    description: "Conception et développement d'une application en 48h sur le thème de la mobilité durable.",
-    startDate: "2024-03",
-    endDate: "2024-03",
-    type: "project",
-  },
-];
+function rowToItem(row: any): TimelineItem {
+  return {
+    id: row.id,
+    title: row.title,
+    organization: row.organization || "",
+    description: row.description || "",
+    startDate: row.start_date || "",
+    endDate: row.end_date || "",
+    type: row.type || "other",
+    title_en: row.title_en || undefined,
+    organization_en: row.organization_en || undefined,
+    description_en: row.description_en || undefined,
+  };
+}
 
 export function getTimeline(): TimelineItem[] {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultTimeline));
-  return defaultTimeline;
+  return cachedTimeline;
 }
 
-export function saveTimeline(items: TimelineItem[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+export async function fetchTimeline(): Promise<TimelineItem[]> {
+  const { data, error } = await supabase
+    .from("timeline")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error || !data) {
+    cachedTimeline = [];
+    return [];
+  }
+  cachedTimeline = data.map(rowToItem);
+  return cachedTimeline;
 }
 
-export function addTimelineItem(item: Omit<TimelineItem, "id">): TimelineItem[] {
-  const items = getTimeline();
-  const newItem = { ...item, id: crypto.randomUUID() };
-  const updated = [...items, newItem];
-  saveTimeline(updated);
-  return updated;
+export async function addTimelineItem(item: Omit<TimelineItem, "id">): Promise<TimelineItem[]> {
+  const maxOrder = cachedTimeline.length;
+  await supabase.from("timeline").insert({
+    title: item.title,
+    organization: item.organization,
+    description: item.description,
+    start_date: item.startDate,
+    end_date: item.endDate,
+    type: item.type,
+    title_en: item.title_en || "",
+    organization_en: item.organization_en || "",
+    description_en: item.description_en || "",
+    sort_order: maxOrder,
+  });
+  return fetchTimeline();
 }
 
-export function removeTimelineItem(id: string): TimelineItem[] {
-  const items = getTimeline().filter((i) => i.id !== id);
-  saveTimeline(items);
-  return items;
+export async function removeTimelineItem(id: string): Promise<TimelineItem[]> {
+  await supabase.from("timeline").delete().eq("id", id);
+  return fetchTimeline();
 }
 
-export function updateTimelineItem(id: string, data: Omit<TimelineItem, "id">): TimelineItem[] {
-  const items = getTimeline().map((i) => (i.id === id ? { ...i, ...data } : i));
-  saveTimeline(items);
-  return items;
+export async function updateTimelineItem(id: string, data: Omit<TimelineItem, "id">): Promise<TimelineItem[]> {
+  await supabase.from("timeline").update({
+    title: data.title,
+    organization: data.organization,
+    description: data.description,
+    start_date: data.startDate,
+    end_date: data.endDate,
+    type: data.type,
+    title_en: data.title_en || "",
+    organization_en: data.organization_en || "",
+    description_en: data.description_en || "",
+  }).eq("id", id);
+  return fetchTimeline();
 }
 
-export function reorderTimeline(fromIndex: number, toIndex: number): TimelineItem[] {
-  const items = [...getTimeline()];
+export async function reorderTimeline(fromIndex: number, toIndex: number): Promise<TimelineItem[]> {
+  const items = [...cachedTimeline];
   const [moved] = items.splice(fromIndex, 1);
   items.splice(toIndex, 0, moved);
-  saveTimeline(items);
+
+  for (let i = 0; i < items.length; i++) {
+    await supabase.from("timeline").update({ sort_order: i }).eq("id", items[i].id);
+  }
+  cachedTimeline = items;
   return items;
 }
 
